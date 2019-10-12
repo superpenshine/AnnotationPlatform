@@ -1,0 +1,139 @@
+{% load static %}
+{% block content %}
+
+<head>
+    <link rel="stylesheet" href="{% static 'css/image.css' %}">
+</head>
+
+
+<body>
+    <div class='left'>                                                                        
+        <canvas id='canvas' width=1280 height=720>                                                 <!--显示图片，固定大小为1280x720-->
+        </canvas>
+        <br>
+        <label>标签：</label>
+        <table>
+            <tr>
+                {% for i in tags %}       
+                <th>{{i}}</th>                                                                     <!--以table形式显示tags（英文描述，对应文档）-->
+                {% endfor %}
+            </tr>
+        </table>
+        <form action='/filter/fix' method='POST'>
+            {% csrf_token %}
+            <input type='text' name='ahash' style="display: none;" value='{{imhash}}'>             <!--从后端传递hash，以便和fix request确认是同一张图，默认不显示-->
+            <label for='fix_label'>fix label:</label>
+            <input type="text" name="fixlabel" id='fix_label' value="{{fixitem}}">                 
+            <label for='id_tag'>fix tag:</label>
+            <input type="text" name="fixtag" id="id_tag" value="{{fixtag}}">
+            <input type="submit" value="fix" />
+        </form>
+    </div>
+    <div style="{{display}}">
+        <img id='canvas_im' src="{{url}}">                                                         <!--原图缓存，默认不显示，当长或宽小于80px时显示-->
+    </div>
+    <div class="right">
+        <form method='GET' action='/filter/'>
+            {% csrf_token %}
+            <table>
+                <tr>
+                    <th>scene</th>
+                    <th>type</th>
+                    <th>project</th>
+                </tr>
+                <tr class="slim">
+                    <th class="slim">{{scene}}</th>
+                    <th class="slim">{{ptype}}</th>
+                    <th class="slim">{{prj}}</th>
+                </tr>
+            </table>
+            <br>
+            <br>
+
+            
+            <table>
+                <tr>
+                    <th>name</th>
+                    <th>color</th>
+                </tr>
+                {%for h in item %}
+                <tr>
+                    <th class="slim" >{{h.name}}</th>                                              <!--表单显示name和框的颜色-->
+                    <th class="slim" id='{{forloop.counter}}_{{h.name}}'></th>       
+                </tr>
+                
+                {%endfor%}
+            </table>
+            <p>剩余: {{free}} 张图片</p>
+            <button id='correct' name='state' value='1'>正确</button>                              <!--state为检查标志位, 默认为0，表示等待检查-->
+            <button id='wrong' name='state' value='2'>错误</button>
+            <button id='per' name='state' value='3'>需要进一步检查</button>
+        </form>
+    </div>
+    <script>
+            //随机生成 rgb 颜色
+            function Color() {
+                this.r = Math.floor(Math.random() * 255);
+                this.g = Math.floor(Math.random() * 255);
+                this.b = Math.floor(Math.random() * 255);
+                this.color = 'rgb(' + this.r + ',' + this.g + ',' + this.b + ')';
+            };
+            
+            // 计算图像缩放尺寸，以及缩放后对应的标注座标，默认缩放为1280x720
+            // name: 标注名 points: 标注座标 width和height为原图长宽
+            // 会有一些精度损失，差距在1到2个px之间
+            function GetRec(name, points, width, height) {
+                var xmax = points.xmax * Math.round(1280/width *100)/100;
+                var xmin = points.xmin * Math.round(1280/width *100)/100;
+                var ymax = points.ymax * Math.round(720/height *100)/100;
+                var ymin = points.ymin * Math.round(720/height *100)/100;
+                return {
+                    name: name,
+                    xmax: Math.floor(xmax),
+                    xmin: Math.floor(xmin),
+                    ymax: Math.floor(ymax),
+                    ymin: Math.floor(ymin)
+                };
+            };
+            // 根据座标在canvas里画框，返回标注名和标注框颜色
+            function DrawRec(p) {
+                var canvas = document.getElementById('canvas');
+                if (canvas.getContext) {
+                    var ctx = canvas.getContext('2d');
+                    var c = new Color();
+                    ctx.strokeStyle = c.color;
+                    ctx.strokeRect(p.xmin, p.ymin, p.xmax - p.xmin, p.ymax - p.ymin);
+                };
+                return {name:p.name,color:ctx.strokeStyle};
+            };
+            // 主入口
+            function DrawIM(){
+                var canvas = document.querySelector('#canvas');
+                if (canvas.getContext) {
+                    var ctx = canvas.getContext('2d');
+                    var im = document.querySelector('#canvas_im');                                 // 以默认隐藏的原图为src，在canvas上缩放
+                    im.addEventListener('load',e=>{
+                        canvas.width = 1280;
+                        canvas.height = 720;
+                        ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+                        {% for data in item %}                                                     // 主循环
+                            
+                            var Rec = GetRec("{{data.name}}",{xmax:{{data.xmax}},xmin:{{data.xmin}},ymin:{{data.ymin}},ymax:{{data.ymax}}},{{width}},{{height}});
+                            var obj = DrawRec(Rec);
+                            var bg = document.getElementById("{{forloop.counter}}_{{data.name}}"); // 根据 tr id 填充背景色
+                            bg.bgColor=obj.color;
+                            
+                        {% endfor %}
+                    });
+                    
+                };
+            };
+            
+            DrawIM();
+            
+        </script>
+
+
+</body>
+
+{%endblock content%}

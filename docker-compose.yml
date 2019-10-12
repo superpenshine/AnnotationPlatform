@@ -1,0 +1,56 @@
+version: '3'
+services:
+    db:
+        container_name: welldb-postgres
+        image: postgres
+        privileged: true
+        ports:
+          - "5432:5432"
+        volumes:
+          - /storage/r1/workspace/welldb/data/postgres/backup:/var/lib/postgresql/backup
+          - pgdata:/var/lib/postgresql/data
+        env_file:
+          - docker/postgres/db_env
+        networks:
+          - db_network
+    welldb:
+        container_name: welldb-app
+        build: .
+        restart: always
+        environment:
+          - DJANGO_SETTINGS_MODULE
+        volumes:
+          - static:/opt/services/welldb/static
+          - /storage/r1/workspace/welldb:/opt/services/welldb/media
+          - app:/data/
+        networks:
+          - db_network
+          - nginx_network
+        depends_on:
+          - db
+    nginx:
+        container_name: welldb-nginx
+        build: ./docker/nginx
+        restart: always
+        ports:
+          - "21000:80"
+        volumes:
+          - static:/opt/services/welldb/static
+          - /storage/r1/workspace/welldb:/opt/services/welldb/media
+        networks:
+          - nginx_network
+        depends_on:
+          - welldb
+
+
+networks:
+  db_network:
+    driver: bridge
+  nginx_network:
+    driver: bridge
+
+volumes:
+  app:
+  static:
+  pgdata:
+

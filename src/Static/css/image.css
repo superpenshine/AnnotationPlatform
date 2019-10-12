@@ -1,0 +1,41 @@
+.left{
+    float: left;
+    /* width: 1280px;
+    height: 720px; */
+
+}
+
+.right{
+    float: right;
+    width: 25%;
+    height: 720px;
+}
+
+.right-button{
+    float: right;
+    text-align: center;
+    margin-right: 30%;
+    position: relative;
+    margin-top: 480px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+  
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.slim {
+    font-weight: normal;
+}
+
+/* img {
+    max-width: 100%;
+    max-height: 100%;
+} */
+

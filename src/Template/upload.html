@@ -1,0 +1,13 @@
+{%block content%}
+<form id='from_nas' action='/upload' method='GET'>
+    <label for="id_url">NAS location:</label>               <!--以默认分享链接为准， / 开头，不包含 /volume1-->
+    <input id='id_url' name='file'>
+    <input type="submit" value="upload">
+</form>
+<div>
+    <p>示例文件名： gate_plate-num_daxie_2018-01-01_night_yellow</p>
+    <p>对应： scene_type_project_time_tags</p>
+    <p>下划线分隔对应不同的输入Label,同一Label之间只允许出现短横(-),特殊标签可以有多个，具体见标注文档</p>
+
+</div>
+{%endblock content%}

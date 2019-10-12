@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+
+<body>
+    <div>
+        <form id="search-form" action="/search/q" method="POST">
+            {% csrf_token %}
+            
+            <label for="id_query">Search Query:</label> 
+            <input type="text" name="q" maxlength="100" id="id_query" />
+            
+            <input type="submit" value="search" />
+        </form>
+    </div>
+    <div>
+        <p>search example: scene:gate type:plate-num project:daxie time_year:2018</p>
+        <p>scene 场景</p>
+        <p>type  项目类型</p>
+        <p>project 项目名称</p>
+        <p>time 数据入库时间 精确到年月日：2017-01-01</p>
+        <p>time_year 数据入库时间 精确到年:2017</p>
+        <p>time_and_after 数据入库时间 在某一日期之后（包括当前日期） 精确到年月日</p>
+        <p>time_and_before 数据入库时间 在某一日期之前（包括当前日期） 精确到年月日</p>
+        <p>time_after 数据入库时间 在某一日期之后（不包括当前日期） 精确到年月日</p>
+        <p>time_before 数据入库时间 在某一日期之前（不包括当前日期） 精确到年月日</p>
+    </div>
+</body> 
+</html>

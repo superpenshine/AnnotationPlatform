@@ -1,0 +1,53 @@
+
+{% block content %}
+
+<div>
+    <p>找到 {{total}} 条数据</p>
+    <table id="result">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Scene</th>
+                <th>Type</th>
+                <th>Project</th>
+                <th>Time</th>
+            </tr>   
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td>{{item.id}}</td>
+                <td>{{item.project_scene}}</td>
+                <td>{{item.project_type}}</td>
+                <td>{{item.project}}</td>
+                <td>{{item.time_add}}</td>
+            </tr>
+            {%endfor%}
+        </tbody>
+    </table>
+    <div class="pagination">
+        <span class="step-links"> 
+            {% if data.has_previous %}                                                             <!--判断是否有上一页-->
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ data.previous_page_number }}">previous</a>
+            {% endif %}
+    
+            <span class="current"> 
+                Page {{ data.number }} of {{ data.paginator.num_pages }}.                          <!--高亮当前页数-->
+            </span>
+    
+            {% if data.has_next %}                                                                 <!--判断是否有下一页-->
+                <a href="?page={{ data.next_page_number }}">next</a>                            
+                <a href="?page={{ data.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+<div>
+    <form id="email" action="/search/confirm" method="GET" >                                       <!--提交email地址，以便之后发送邮件-->
+        <label for="id_mail">mail address:</label> 
+        <input type="text" name="mail" maxlength="100" id="id_mail" />
+        <input type="submit" value="submit" />
+    </form>
+</div>
+{% endblock content %}
