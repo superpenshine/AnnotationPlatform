@@ -87,8 +87,10 @@ DATABASES = {
         'NAME': 'wellocean',
         'USER': 'westwell',
         'PASSWORD': 'westwell-lab',
-        'HOST': '192.168.105.30',                                                          # docker link  postgres:db
-        'PORT': '5432',
+        # 'HOST': '192.168.105.30',                                                          # docker link  postgres:db
+        # 'PORT': '5432',
+        'HOST': '127.0.0.1', 
+        'PORT': '5433', 
     }
 }
 
@@ -163,8 +165,9 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-
+# static file to refer to in html
 STATIC_URL = '/static/'
+# Tells separated static files paths
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "Static"),
 ]
@@ -173,6 +176,7 @@ MEDIA_URL = '/media/'
 
 ## Serving the STATIC FILES
 # as declared in NginX conf, it must match /opt/services/welldb/static/
+# Tells where django save all the static files to
 STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
 
 # do the same for media files, it must match /opt/services/welldb/media/

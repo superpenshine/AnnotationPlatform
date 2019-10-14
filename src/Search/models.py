@@ -21,6 +21,9 @@ class Annotation(models.Model):
     class Meta:
         db_table = 'annotation'
 
+    def __str__(self):
+        return f'\nEntry:\n     {self.project_scene}_{self.project_type}_{self.project}_{self.ano_type}_{self.tags}_{self.time_add}'
+
 # tag表
 class Tags(models.Model):
     tag_class = models.CharField(max_length=32)

@@ -11,6 +11,7 @@ class Index():
     def __init__(self, *args, **kwargs):
         super(Index, self).__init__(*args, **kwargs)
         self.im_url = '/media/'                                     # 图片访问路径
+        # self.im_url = '/home/wwl/datasets_default/' 
         self.cache = Annotation.objects.filter(
             Q(check_state=0) & Q(ano_type='pascal_voc'))            # 未检查的图片数据库缓存  
         self.hash = ''
@@ -23,9 +24,10 @@ class Index():
         while data_decode_fail:
             im = self.cache.all()[randint(0, free-1)]               # 随机抽取一条记录
             self.hash = im.hash
-            ano_for = Annotation.objects.filter(hash=im.hash)       # 取出标签
-            get_im = self.im_url+im.hash+'.jpg'                     # 文件完整访问路径
-            scene = ano_for.project_scene                     
+            ano_for = Annotation.objects.filter(hash=im.hash)       # 取出标签 
+            get_im = self.im_url+im.hash+'.jpg'                     # 文件完整访问路径 
+            ano_for = ano_for[0]                                    # ano_for is list typed obj
+            scene = ano_for.project_scene 
             ptype = ano_for.project_type
             prj = ano_for.project
             size = ano_for.size

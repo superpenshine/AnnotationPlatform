@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
+from django.http import JsonResponse
 import urllib
 from .models import Annotation, Queue, Tags
 
@@ -11,7 +12,8 @@ from .models import Annotation, Queue, Tags
 
 # 主入口
 def index(request):
-    return render(request, 'search.html')
+    dummy_dict = {'scene': ['aaa', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii']}  
+    return render(request, 'search.html', dummy_dict)
 
 # 主类 用于request处理函数之间互用缓存 ps: 在这里没有问题，download 使用类做缓存就会报错，暂时无解
 class Query():
@@ -91,3 +93,8 @@ class Query():
             return redirect(f'/download?mail={request.GET["mail"]}&{q}')
         else:
             print('q is null')
+
+    # 返回可用下拉菜单选项
+    def get_options(self, request): 
+        dummy_dict = {'scene': ['aaa', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii']}                                                        # To be replaced by actual available scene options
+        return JsonResponse(dummy_dict, safe=False)
