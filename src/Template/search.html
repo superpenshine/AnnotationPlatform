@@ -10,6 +10,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
     <!-- Custom Static Files -->
+    <script  src="{% static 'js/ajax_f.js' %}" type="text/javascript"></script>
     <script  src="{% static 'js/search.js' %}" type="text/javascript"></script>
     <link href="{% static 'css/search.css' %}" rel="stylesheet" type="text/css">
 
@@ -20,19 +21,20 @@
 </head>
 
 <body>
-    <div class="main-block", id="left">
+    <div>
+        <form id="search-form" action="/search/q" method="POST">
+            {% csrf_token %}
+            
+            <label for="id_query">Search Query:</label> 
+            <input type="text" name="q" maxlength="100" id="id_query" />
+            
+            <input type="submit" value="search" />
+        </form>
+    </div>
+    <div class="main-block", id="left", style="display: inline-block;">
+        
         <div>
-            <form id="search-form" action="/search/q" method="POST">
-                {% csrf_token %}
-                
-                <label for="id_query">Search Query:</label> 
-                <input type="text" name="q" maxlength="100" id="id_query" />
-                
-                <input type="submit" value="search" />
-            </form>
-        </div>
-        <div>
-            <form method="POST">
+            <form id="search-form">
                 {% csrf_token %}
                 <div class="form-row">
                     <div class="form-group col-4">
@@ -75,6 +77,19 @@
                     </div>
                 </div>
                 <div class="form-row">
+                    <div class="form-group col-4">
+                        <label for="inputState">Tags</label>
+                        <select id="inputState" class="form-control" name = 'project'>
+                        {% if project %}
+                            {% for p in project %}
+                                <option>{{ p }}</option>
+                            {% endfor %}
+                        {% endif %}
+                        <option selected>*</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
                     <div class='form-group col-4'>
                         <label for="form-control">Date Range</label>
                         <input class="form-control" id="daterangepicker" type=text/ name="daterange">
@@ -99,7 +114,7 @@
 
                     </script>
                 </div>
-                <button type="button" class="btn btn-primary" id="search-button">Submit</button>
+                <button type="submit" class="btn btn-primary" id="search-button">Submit</button>
             </form>
         </div>
 
@@ -117,18 +132,39 @@
             <p>time_before 数据入库时间 在某一日期之前（不包括当前日期） 精确到年月日</p>
         </div>
     </div>
-    <div class="main-block", id="rigth">
+    <div class="main-block", id="rigth", style="display: inline-block;vertical-align: top;width: 50%;">
         <div>
-            <p>search example: scene:gate type:plate-num project:daxie time_year:2018</p>
-            <p>scene 场景</p>
-            <p>type  项目类型</p>
-            <p>project 项目名称</p>
-            <p>time 数据入库时间 精确到年月日：2017-01-01</p>
-            <p>time_year 数据入库时间 精确到年:2017</p>
-            <p>time_and_after 数据入库时间 在某一日期之后（包括当前日期） 精确到年月日</p>
-            <p>time_and_before 数据入库时间 在某一日期之前（包括当前日期） 精确到年月日</p>
-            <p>time_after 数据入库时间 在某一日期之后（不包括当前日期） 精确到年月日</p>
-            <p>time_before 数据入库时间 在某一日期之前（不包括当前日期） 精确到年月日</p>
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">SCENE</th>
+                        <th scope="col">TYPE</th>
+                        <th scope="col">PROJECT</th>
+                        <th scope="col">TIME ADDED</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>Mark</td>
+                        <td>Otto</td>
+                        <td>@mdo</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2</th>
+                        <td>Jacob</td>
+                        <td>Thornton</td>
+                        <td>@fat</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3</th>
+                        <td>Larry</td>
+                        <td>the Bird</td>
+                        <td>@twitter</td>
+                    </tr>
+              </tbody>
+            </table>
         </div>
     </div>
 </body> 

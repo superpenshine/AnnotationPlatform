@@ -12,7 +12,7 @@ from .models import Annotation, Queue, Tags
 
 # 主入口
 def index(request):
-    dummy_dict = {'scene': ['aaa', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii']}  
+    dummy_dict = {'scene': ['aaa', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii'], 'tags':['jjj', 'kkk', 'lll']}  
     return render(request, 'search.html', dummy_dict)
 
 # 主类 用于request处理函数之间互用缓存 ps: 在这里没有问题，download 使用类做缓存就会报错，暂时无解
@@ -70,7 +70,36 @@ class Query():
         q_encode = urllib.parse.urlencode({'q': q})                                                # 解码搜索条件，方便之后发送文本格式的邮件
         self.q = q_encode
         return redirect(f'/search/show')                                                           # 跳转结果展示页面
-    
+
+    # 展示查询结果（分页）
+    def search_with_cond(self, request):
+        CACHE = self.cache
+        for k, v in request.POST.items():
+            if not v：                                                                              # if parameter has no value
+                continue
+            if k == 'scene':                                                                       
+                CACHE = CACHE.filter(project_scene=v)                                              
+            elif k == 'project':
+                CACHE = CACHE.filter(project=v)
+            elif k == 'type':
+                CACHE = CACHE.filter(project_type=v)
+            elif k == 'daterange':                                                                  # 在时间范围内搜索（包括前后时间）
+                earlier = v.split('-')[0].strip()
+                later = v.split('-')[1].strip()
+                CACHE = CACHE.filter(
+                    time_add__gte=datetime.strptime(earlier, '%Y-%m-%d')).filter(
+                    time_add__lte=datetime.strptime(later, '%Y-%m-%d'))
+            elif k == 'tags':                                                                       # 逗号分隔的 tag_en 必须要存在于 Tags 表中
+                t = v.split(',')
+                ids = [i.id for i in Tags.objects.filter(tag_en=k) if k in t]
+                CACHE = CACHE.filter(tags__contains=list(ids))                       
+            else:
+                return redirect('/search')
+            self.cache = CACHE
+            q_encode = urllib.parse.urlencode({'q': q})                                                # 解码搜索条件，方便之后发送文本格式的邮件
+            self.q = q_encode
+            return redirect(f'/search/show_page?page=1')
+
     # 展示查询结果（分页）
     def show_res(self, request):
         CACHE = self.cache
@@ -80,7 +109,17 @@ class Query():
         data = pag.get_page(page)                                                                  # 获取每一页的结果
         context = {'total': res.count(), 'data': data}          
         return render(request, 'show_search_res.html', context)
-    
+
+    # 按页展示查询结果
+    def show_page(self, request):
+        CACHE = self.cache
+        res = CACHE.filter(ano_type='pascal_voc').order_by('id')                                   # 取出搜索结果
+        pag = Paginator(res, 10)                                                                   # 分页展示，每页取10个结果，可调整
+        page = request.GET.get('page')
+        data = pag.get_page(page)                                                                  # 获取每一页的结果
+        context = {'total': res.count(), 'data': data, 'page': page}          
+        return JsonResponse(context, safe=False)
+
     # 跳转打包路径
     def red_download(self, request):
         if self.q:
@@ -96,5 +135,5 @@ class Query():
 
     # 返回可用下拉菜单选项
     def get_options(self, request): 
-        dummy_dict = {'scene': ['aaa', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii']}                                                        # To be replaced by actual available scene options
+        dummy_dict = {'scene': ['aaa', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii'], 'tags':['jjj', 'kkk', 'lll']}                                                        # To be replaced by actual available scene options
         return JsonResponse(dummy_dict, safe=False)
