@@ -31,17 +31,17 @@
             <input type="submit" value="search" />
         </form>
     </div>
-    <div class="main-block", id="left", style="display: inline-block;">
+    <div class="main-block", id="left">
         
         <div>
-            <form id="search-form">
+            <form id="main_search_form", action="/search/search_with_cond">
                 {% csrf_token %}
-                <div class="form-row">
+                <div class="form-row justify-content-center">
                     <div class="form-group col-4">
                         <label for="inputState">Scene</label>
                         <select id="inputState" class="form-control" name = 'scene'>
-                        {% if scene %}
-                            {% for s in scene %}
+                        {% if scenes %}
+                            {% for s in scenes %}
                                 <option>{{ s }}</option>
                             {% endfor %}
                         {% endif %}
@@ -50,12 +50,12 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-row">
+                <div class="form-row justify-content-center">
                     <div class="form-group col-4">
                         <label for="inputState">Type</label>
                         <select id="inputState" class="form-control" name = 'type'>
-                        {% if type %}
-                            {% for t in type %}
+                        {% if types %}
+                            {% for t in types %}
                                 <option>{{ t }}</option>
                             {% endfor %}
                         {% endif %}
@@ -63,12 +63,12 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-row">
+                <div class="form-row justify-content-center">
                     <div class="form-group col-4">
                         <label for="inputState">Project</label>
                         <select id="inputState" class="form-control" name = 'project'>
-                        {% if project %}
-                            {% for p in project %}
+                        {% if projects %}
+                            {% for p in projects %}
                                 <option>{{ p }}</option>
                             {% endfor %}
                         {% endif %}
@@ -76,12 +76,12 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-row">
+                <div class="form-row justify-content-center">
                     <div class="form-group col-4">
-                        <label for="inputState">Tags</label>
-                        <select id="inputState" class="form-control" name = 'project'>
-                        {% if project %}
-                            {% for p in project %}
+                        <label for="inputState">Tag</label>
+                        <select id="inputState" class="form-control" name = 'tags'>
+                        {% if tags %}
+                            {% for p in tags %}
                                 <option>{{ p }}</option>
                             {% endfor %}
                         {% endif %}
@@ -89,7 +89,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-row">
+                <div class="form-row justify-content-center">
                     <div class='form-group col-4'>
                         <label for="form-control">Date Range</label>
                         <input class="form-control" id="daterangepicker" type=text/ name="daterange">
@@ -114,7 +114,9 @@
 
                     </script>
                 </div>
-                <button type="submit" class="btn btn-primary" id="search-button">Submit</button>
+                <div class='form-row justify-content-center'>
+                    <button type="submit" class="btn btn-primary" id="search-button">Submit</button>
+                </div>
             </form>
         </div>
 
@@ -132,8 +134,8 @@
             <p>time_before 数据入库时间 在某一日期之前（不包括当前日期） 精确到年月日</p>
         </div>
     </div>
-    <div class="main-block", id="rigth", style="display: inline-block;vertical-align: top;width: 50%;">
-        <div>
+    <div class="main-block", id="right">
+        <div class = 'row justify-content-end'>
             <table class="table table-striped">
                 <thead class="thead-dark">
                     <tr>
@@ -146,25 +148,38 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">2</th>
-                        <td>Jacob</td>
-                        <td>Thornton</td>
-                        <td>@fat</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">3</th>
-                        <td>Larry</td>
-                        <td>the Bird</td>
-                        <td>@twitter</td>
+                        <th scope="row">N/A</th>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td>N/A</td>
                     </tr>
               </tbody>
             </table>
+        </div>
+        <div class = 'row justify-content-end'>
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                <li class="page-item disabled" id='prev-btn-li'>
+                    <a class="page-link" id='prev-btn-a' aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                </li>
+                <li class="page-item"><a class="page-link" id='curr-page'>1</a></li>
+                <!-- <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li> -->
+                <li class="page-item disabled" id='next-btn-li'>
+                    <a class="page-link" id='next-btn-a' aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </li>
+                </ul>
+            </nav>
+        </div>
+        <div class = "row justify-content-end">
+            <p id='total'>Total number of record: 0</p>
         </div>
     </div>
 </body> 

@@ -12,8 +12,21 @@ from .models import Annotation, Queue, Tags
 
 # 主入口
 def index(request):
-    dummy_dict = {'scene': ['aaa', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii'], 'tags':['jjj', 'kkk', 'lll']}  
-    return render(request, 'search.html', dummy_dict)
+    hints = get_hints()
+    return render(request, 'search.html', hints)
+
+# Show available options in dropdown list
+def get_hints():
+    scenes = Annotation.objects.order_by().values('project_scene').distinct()
+    scenes = [x['project_scene'] for x in scenes]
+    projects = Annotation.objects.order_by().values('project').distinct()
+    projects = [x['project'] for x in projects]
+    types = Annotation.objects.order_by().values('project_type').distinct()
+    types = [x['project_type'] for x in types]
+    tags = Annotation.objects.order_by().values('tags').distinct()
+    tags = [x['tags'] for x in tags]
+    return {'scenes':scenes, 'projects':projects, 'types':types, 'tags':tags}
+
 
 # 主类 用于request处理函数之间互用缓存 ps: 在这里没有问题，download 使用类做缓存就会报错，暂时无解
 class Query():
@@ -73,9 +86,11 @@ class Query():
 
     # 展示查询结果（分页）
     def search_with_cond(self, request):
-        CACHE = self.cache
+        CACHE = Annotation.objects.all()
         for k, v in request.POST.items():
-            if not v：                                                                              # if parameter has no value
+            if k == 'csrfmiddlewaretoken':                                                                              # if parameter has no value
+                continue
+            if not v or v == '*':
                 continue
             if k == 'scene':                                                                       
                 CACHE = CACHE.filter(project_scene=v)                                              
@@ -87,18 +102,18 @@ class Query():
                 earlier = v.split('-')[0].strip()
                 later = v.split('-')[1].strip()
                 CACHE = CACHE.filter(
-                    time_add__gte=datetime.strptime(earlier, '%Y-%m-%d')).filter(
-                    time_add__lte=datetime.strptime(later, '%Y-%m-%d'))
+                    time_add__gte=datetime.strptime(earlier, '%m/%d/%Y')).filter(
+                    time_add__lte=datetime.strptime(later, '%m/%d/%Y'))
             elif k == 'tags':                                                                       # 逗号分隔的 tag_en 必须要存在于 Tags 表中
                 t = v.split(',')
                 ids = [i.id for i in Tags.objects.filter(tag_en=k) if k in t]
                 CACHE = CACHE.filter(tags__contains=list(ids))                       
             else:
                 return redirect('/search')
-            self.cache = CACHE
-            q_encode = urllib.parse.urlencode({'q': q})                                                # 解码搜索条件，方便之后发送文本格式的邮件
-            self.q = q_encode
-            return redirect(f'/search/show_page?page=1')
+        self.cache = CACHE
+        # q_encode = urllib.parse.urlencode({'q': q})                                                # 解码搜索条件，方便之后发送文本格式的邮件
+        # self.q = q_encode
+        return redirect(f'/search/show_page?page=1')
 
     # 展示查询结果（分页）
     def show_res(self, request):
@@ -111,14 +126,31 @@ class Query():
         return render(request, 'show_search_res.html', context)
 
     # 按页展示查询结果
+    # data field example: [{}, {}, {}]
     def show_page(self, request):
         CACHE = self.cache
         res = CACHE.filter(ano_type='pascal_voc').order_by('id')                                   # 取出搜索结果
         pag = Paginator(res, 10)                                                                   # 分页展示，每页取10个结果，可调整
         page = request.GET.get('page')
         data = pag.get_page(page)                                                                  # 获取每一页的结果
-        context = {'total': res.count(), 'data': data, 'page': page}          
+        # Construct data field
+        data = self.page_to_dict(data)
+        context = {'total': res.count(), 'data': data, 'page': page}
         return JsonResponse(context, safe=False)
+
+    # 将pagenator数据转化为dict
+    def page_to_dict(self, data):
+        # Construct data field if there's data
+        if len(data) == 0:
+            return {}
+        fields = [f.name for f in data[0]._meta.fields]
+        data_l = []
+        for row in range(max(10, len(data))):
+            row_d = {}
+            for attr in fields:
+                row_d[attr] = getattr(data[row], attr)
+            data_l.append(row_d)
+        return data_l
 
     # 跳转打包路径
     def red_download(self, request):
@@ -135,5 +167,5 @@ class Query():
 
     # 返回可用下拉菜单选项
     def get_options(self, request): 
-        dummy_dict = {'scene': ['aaa', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii'], 'tags':['jjj', 'kkk', 'lll']}                                                        # To be replaced by actual available scene options
+        dummy_dict = {'scene': ['gate', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii'], 'tags':['jjj', 'kkk', 'lll']}                                                        # To be replaced by actual available scene options
         return JsonResponse(dummy_dict, safe=False)
