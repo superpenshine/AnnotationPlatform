@@ -15,18 +15,60 @@ def index(request):
     hints = get_hints()
     return render(request, 'search.html', hints)
 
+# Updae dropdown options
+def update_opts(request):
+    hints = get_hints(list(request.POST.items()))
+    return JsonResponse(hints, safe=False)
+
 # Show available options in dropdown list
-def get_hints():
-    scenes = Annotation.objects.order_by().values('project_scene').distinct()
+def get_hints(cond=None):
+    # Apply condition if given
+    objects = Annotation.objects.all();
+    print(cond)
+    if cond:
+        print('111')
+        objects = select(objects, cond)
+        print('222')
+    scenes = objects.values('project_scene').distinct()
     scenes = [x['project_scene'] for x in scenes]
-    projects = Annotation.objects.order_by().values('project').distinct()
+    scenes.insert(0, '*')
+    projects = objects.values('project').distinct()
     projects = [x['project'] for x in projects]
-    types = Annotation.objects.order_by().values('project_type').distinct()
+    projects.insert(0, '*')
+    types = objects.values('project_type').distinct()
     types = [x['project_type'] for x in types]
-    tags = Annotation.objects.order_by().values('tags').distinct()
+    types.insert(0, '*')
+    tags = objects.values('tags').distinct()
     tags = [x['tags'] for x in tags]
+    tags.insert(0, '*')
     return {'scenes':scenes, 'projects':projects, 'types':types, 'tags':tags}
 
+# Select entries with condition
+def select(data, cond):
+    for k, v in cond:
+        print(k, v)
+        if not v or v == '*':
+            continue
+        if k == 'scene':                                                                       
+            data = data.filter(project_scene=v)                                              
+        elif k == 'project':
+            data = data.filter(project=v)
+        elif k == 'type':
+            data = data.filter(project_type=v)
+        elif k == 'daterange':                                                                  # 在时间范围内搜索（包括前后时间）
+            earlier = v.split('-')[0].strip()
+            later = v.split('-')[1].strip()
+            data = data.filter(
+                time_add__gte=datetime.strptime(earlier, '%m/%d/%Y')).filter(
+                time_add__lte=datetime.strptime(later, '%m/%d/%Y'))
+        elif k == 'tags':                                                                       # 逗号分隔的 tag_en 必须要存在于 Tags 表中
+            t = v.split(',')
+            ids = [i.id for i in Tags.objects.filter(tag_en=k) if k in t]
+            data = data.filter(tags__contains=list(ids))                       
+        else:
+            print(f"Undefined parameter: {k}, value: {v}")
+            continue
+    return data
 
 # 主类 用于request处理函数之间互用缓存 ps: 在这里没有问题，download 使用类做缓存就会报错，暂时无解
 class Query():
@@ -87,30 +129,7 @@ class Query():
     # 展示查询结果（分页）
     def search_with_cond(self, request):
         CACHE = Annotation.objects.all()
-        for k, v in request.POST.items():
-            if k == 'csrfmiddlewaretoken':                                                                              # if parameter has no value
-                continue
-            if not v or v == '*':
-                continue
-            if k == 'scene':                                                                       
-                CACHE = CACHE.filter(project_scene=v)                                              
-            elif k == 'project':
-                CACHE = CACHE.filter(project=v)
-            elif k == 'type':
-                CACHE = CACHE.filter(project_type=v)
-            elif k == 'daterange':                                                                  # 在时间范围内搜索（包括前后时间）
-                earlier = v.split('-')[0].strip()
-                later = v.split('-')[1].strip()
-                CACHE = CACHE.filter(
-                    time_add__gte=datetime.strptime(earlier, '%m/%d/%Y')).filter(
-                    time_add__lte=datetime.strptime(later, '%m/%d/%Y'))
-            elif k == 'tags':                                                                       # 逗号分隔的 tag_en 必须要存在于 Tags 表中
-                t = v.split(',')
-                ids = [i.id for i in Tags.objects.filter(tag_en=k) if k in t]
-                CACHE = CACHE.filter(tags__contains=list(ids))                       
-            else:
-                return redirect('/search')
-        self.cache = CACHE
+        self.cache = select(CACHE, list(request.POST.items()))
         # q_encode = urllib.parse.urlencode({'q': q})                                                # 解码搜索条件，方便之后发送文本格式的邮件
         # self.q = q_encode
         return redirect(f'/search/show_page?page=1')

@@ -38,61 +38,57 @@
                 {% csrf_token %}
                 <div class="form-row justify-content-center">
                     <div class="form-group col-4">
-                        <label for="inputState">Scene</label>
-                        <select id="inputState" class="form-control" name = 'scene'>
+                        <label for="input-scene">Scene</label>
+                        <select id="input-scene" class="form-control" name = 'scene'>
                         {% if scenes %}
                             {% for s in scenes %}
-                                <option>{{ s }}</option>
+                                <option class="gen">{{ s }}</option>
                             {% endfor %}
                         {% endif %}
-                        <option selected>*</option>
-                        <!-- <option>...</option> -->
                         </select>
                     </div>
                 </div>
                 <div class="form-row justify-content-center">
                     <div class="form-group col-4">
-                        <label for="inputState">Type</label>
-                        <select id="inputState" class="form-control" name = 'type'>
+                        <label for="input-type">Type</label>
+                        <select id="input-type" class="form-control" name = 'type'>
                         {% if types %}
                             {% for t in types %}
-                                <option>{{ t }}</option>
+                                <option class="gen">{{ t }}</option>
                             {% endfor %}
                         {% endif %}
-                        <option selected>*</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-row justify-content-center">
                     <div class="form-group col-4">
-                        <label for="inputState">Project</label>
-                        <select id="inputState" class="form-control" name = 'project'>
+                        <label for="input-project">Project</label>
+                        <select id="input-project" class="form-control" name = 'project'>
                         {% if projects %}
                             {% for p in projects %}
-                                <option>{{ p }}</option>
+                                <option class="gen">{{ p }}</option>
                             {% endfor %}
                         {% endif %}
-                        <option selected>*</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-row justify-content-center">
                     <div class="form-group col-4">
-                        <label for="inputState">Tag</label>
-                        <select id="inputState" class="form-control" name = 'tags'>
+                        <label for="input-tags">Tag</label>
+                        <select id="input-tags" class="form-control" name = 'tags'>
+                        <!-- <option class="gen" selected>*</option> -->
                         {% if tags %}
                             {% for p in tags %}
-                                <option>{{ p }}</option>
+                                <option class="gen">{{ p }}</option>
                             {% endfor %}
                         {% endif %}
-                        <option selected>*</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-row justify-content-center">
                     <div class='form-group col-4'>
-                        <label for="form-control">Date Range</label>
-                        <input class="form-control" id="daterangepicker" type=text/ name="daterange">
+                        <label for="daterangepicker">Date Range</label>
+                        <input class="form-control" id="daterangepicker" type="text" name="daterange">
                     </div>
                     <script>
                         $( function() {
@@ -120,7 +116,6 @@
             </form>
         </div>
 
-
         <div>
             <p>search example: scene:gate type:plate-num project:daxie time_year:2018</p>
             <p>scene 场景</p>
@@ -136,50 +131,71 @@
     </div>
     <div class="main-block", id="right">
         <div class = 'row justify-content-end'>
-            <table class="table table-striped">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">SCENE</th>
-                        <th scope="col">TYPE</th>
-                        <th scope="col">PROJECT</th>
-                        <th scope="col">TIME ADDED</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th scope="row">N/A</th>
-                        <td>N/A</td>
-                        <td>N/A</td>
-                        <td>N/A</td>
-                        <td>N/A</td>
-                    </tr>
-              </tbody>
-            </table>
+            <div class="col-12">
+
+                <table class="table table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">SCENE</th>
+                            <th scope="col">TYPE</th>
+                            <th scope="col">PROJECT</th>
+                            <th scope="col">TIME ADDED</th>
+                            <th scope="col">Download</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">N/A</th>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td><div><input type="checkbox" class="ckb"></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class = 'row justify-content-end'>
-            <nav aria-label="Page navigation example">
-                <ul class="pagination">
-                <li class="page-item disabled" id='prev-btn-li'>
-                    <a class="page-link" id='prev-btn-a' aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                </li>
-                <li class="page-item"><a class="page-link" id='curr-page'>1</a></li>
-                <!-- <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li> -->
-                <li class="page-item disabled" id='next-btn-li'>
-                    <a class="page-link" id='next-btn-a' aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                        <span class="sr-only">Next</span>
-                    </a>
-                </li>
-                </ul>
-            </nav>
-        </div>
-        <div class = "row justify-content-end">
-            <p id='total'>Total number of record: 0</p>
+        <div class="row"></div>
+        <div class = 'row justify-content-between align-items-center'>
+            <div class="col-6" >
+                <div style="display: inline-block;">
+                    <label for="input-email">Email</label>
+                </div>
+                <div style="display: inline-block;">
+                    <input id="input-email" class="form-control" type="text" name="email" maxlength="100">
+                </div>
+                <div style="display: inline-block;">
+                    <button type="submit" class="btn btn-primary" id="download-button">Download</button>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="row justify-content-end">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                        <li class="page-item disabled" id='prev-btn-li'>
+                            <a class="page-link page-nav-btn" id='prev-btn-a' aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                        </li>
+                        <li class="page-item"><input class="page-link" id='curr-page' size=3 placeholder="1"></li>
+                        <!-- <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li> -->
+                        <li class="page-item disabled" id='next-btn-li'>
+                            <a class="page-link page-nav-btn" id='next-btn-a' aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="row justify-content-end">
+                    <p id='total'>Total number of record: 0</p>
+                </div>
+            </div>
         </div>
     </div>
 </body> 
