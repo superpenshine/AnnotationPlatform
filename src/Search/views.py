@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import urllib
 from .models import Annotation, Queue, Tags
 
@@ -13,6 +13,12 @@ from .models import Annotation, Queue, Tags
 # 主入口
 def index(request):
     hints = get_hints()
+
+    # List to string. Ex: ['1', '2'] => '1,2'
+    for i in range(len(hints['tags'])):
+        # tags_l = hints['tags'][i]
+        tags_str = ','.join(map(str, hints['tags'][i]))
+        hints['tags'][i] = tags_str
     return render(request, 'search.html', hints)
 
 # Updae dropdown options
@@ -24,11 +30,8 @@ def update_opts(request):
 def get_hints(cond=None):
     # Apply condition if given
     objects = Annotation.objects.all();
-    print(cond)
     if cond:
-        print('111')
         objects = select(objects, cond)
-        print('222')
     scenes = objects.values('project_scene').distinct()
     scenes = [x['project_scene'] for x in scenes]
     scenes.insert(0, '*')
@@ -46,7 +49,6 @@ def get_hints(cond=None):
 # Select entries with condition
 def select(data, cond):
     for k, v in cond:
-        print(k, v)
         if not v or v == '*':
             continue
         if k == 'scene':                                                                       
@@ -66,7 +68,7 @@ def select(data, cond):
             ids = [i.id for i in Tags.objects.filter(tag_en=k) if k in t]
             data = data.filter(tags__contains=list(ids))                       
         else:
-            print(f"Undefined parameter: {k}, value: {v}")
+            print(f"INFO: Undefined parameter: {k}, value: {v}")
             continue
     return data
 
@@ -75,7 +77,8 @@ class Query():
     def __init__(self):
         self.cache = Annotation.objects.all()                                                      # 缓存
         self.q = ''                                                                                # 查询条件缓存
-    
+        self.req = []
+
     # 搜索条件过滤以及查找
     def search(self, request):
         CACHE = self.cache
@@ -129,9 +132,9 @@ class Query():
     # 展示查询结果（分页）
     def search_with_cond(self, request):
         CACHE = Annotation.objects.all()
-        self.cache = select(CACHE, list(request.POST.items()))
-        # q_encode = urllib.parse.urlencode({'q': q})                                                # 解码搜索条件，方便之后发送文本格式的邮件
-        # self.q = q_encode
+        req_lst = list(request.POST.items())
+        self.req = ' '.join([f"{req[0]}:{req[1]}" for req in req_lst][1:])
+        self.cache = select(CACHE, req_lst)
         return redirect(f'/search/show_page?page=1')
 
     # 展示查询结果（分页）
@@ -173,6 +176,8 @@ class Query():
 
     # 跳转打包路径
     def red_download(self, request):
+        # import pdb
+        # pdb.set_trace()
         if self.q:
             q = self.q
             CACHE = self.cache
@@ -184,7 +189,16 @@ class Query():
         else:
             print('q is null')
 
-    # 返回可用下拉菜单选项
-    def get_options(self, request): 
-        dummy_dict = {'scene': ['gate', 'bbb', 'ccc'], 'type': ['ddd', 'eee', 'fff'], 'project': ['ggg', 'hhh', 'iii'], 'tags':['jjj', 'kkk', 'lll']}                                                        # To be replaced by actual available scene options
-        return JsonResponse(dummy_dict, safe=False)
+    # 下载
+    def dl(self, request):
+        if self.req:
+            CACHE = self.cache
+            # CACHE = CACHE.filter(ano_type='pascal_voc')                                           # 限制打包的标注格式只能式pascal_voc
+            ids = [str(i.id) for i in CACHE]
+            mail = request.POST.get('mail')
+            Queue.objects.create(mail=mail, task_list=ids)                    # 把 id 列表存入队列
+            req_dict = "req="+self.req
+            return redirect(f'/download?mail={mail}&{req_dict}')
+        else:
+            return HttpResponse(content='To use the download function, you must make a search query first!', status=400)
+            

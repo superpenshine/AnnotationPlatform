@@ -21,7 +21,7 @@ function ajax(){
         if(xhr.status == 200){ 
           ajaxData.success(xhr.response) 
         }else{ 
-          ajaxData.error() 
+          ajaxData.error(xhr.response) 
         }  
       } 
     }  

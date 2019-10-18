@@ -34,7 +34,7 @@
     <div class="main-block", id="left">
         
         <div>
-            <form id="main_search_form", action="/search/search_with_cond">
+            <form id="main_search_form", action="/search/search_with_cond" method="POST">
                 {% csrf_token %}
                 <div class="form-row justify-content-center">
                     <div class="form-group col-4">
@@ -80,6 +80,7 @@
                         {% if tags %}
                             {% for p in tags %}
                                 <option class="gen">{{ p }}</option>
+                                }
                             {% endfor %}
                         {% endif %}
                         </select>
@@ -111,7 +112,7 @@
                     </script>
                 </div>
                 <div class='form-row justify-content-center'>
-                    <button type="submit" class="btn btn-primary" id="search-button">Submit</button>
+                    <button type="submit" class="btn btn-primary" id="search-button">Search</button>
                 </div>
             </form>
         </div>
@@ -151,7 +152,12 @@
                             <td>N/A</td>
                             <td>N/A</td>
                             <td>N/A</td>
-                            <td><div><input type="checkbox" class="ckb"></div></td>
+                            <td>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input ckb" id = "customCheck1">
+                                    <label class="custom-control-label" for="customCheck1"></label>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -160,15 +166,18 @@
         <div class="row"></div>
         <div class = 'row justify-content-between align-items-center'>
             <div class="col-6" >
-                <div style="display: inline-block;">
-                    <label for="input-email">Email</label>
-                </div>
-                <div style="display: inline-block;">
-                    <input id="input-email" class="form-control" type="text" name="email" maxlength="100">
-                </div>
-                <div style="display: inline-block;">
-                    <button type="submit" class="btn btn-primary" id="download-button">Download</button>
-                </div>
+                <form id='dl-form' action="/search/dl" method="POST">
+                    {% csrf_token %}
+                    <div style="display: inline-block;">
+                        <label for="input-email">Email</label>
+                    </div>
+                    <div style="display: inline-block;">
+                        <input id="input-email" class="form-control" type="text" name="mail" maxlength="100">
+                    </div>
+                    <div style="display: inline-block;">
+                        <button type="submit" class="btn btn-primary" id="download-button">Download</button>
+                    </div>
+                </form>
             </div>
             <div class="col-3">
                 <div class="row justify-content-end">

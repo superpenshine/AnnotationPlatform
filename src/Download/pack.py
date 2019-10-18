@@ -46,7 +46,7 @@ def gen_XML(data):
 # 转移图片和生成xml到新的文件夹
 # im： queryset 类型, dst: 打包到的主文件夹, a: 主文件夹下的 xml 存储位置， i: 主文件夹下 图片 的存储位置
 def pack(im, dst, a, i):
-    src = '/workspace/data/JPEGImages/'
+    src = '/home/wwl/datasets_default/JPEGImages'
     imc = os.path.join(src, im.hash+'.'+im.format["image"])                            # 图片的源路径
     if os.path.exists(imc):
         shutil.copy(imc, os.path.join(i, im.hash+'_' +

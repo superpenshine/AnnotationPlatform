@@ -17,12 +17,12 @@ from .pack import pack                                                         #
 
 def send_mail(mail):
     host = 'smtp.exmail.qq.com'
-    user = 'shufan.wang@westwell-lab.com'
-    pwd = 'ZUoGc6Srv9pfUHZW'
+    user = 'haotian.shen@westwell-lab.com'
+    pwd = 'Westwell123'
     msg = EmailMessage()
     msg.set_content(mail['content'])
     msg['Subject'] = mail['sub']
-    msg['From'] = Address('ShufanWang', 'shufan.wang', 'westwell-lab.com')
+    msg['From'] = Address('HaotianShen', 'haotian.shen', 'westwell-lab.com')
     msg['to'] = Address(mail['to'].split('@')[0].replace(
         '.', ''), mail['to'].split('@')[0], 'westwell-lab.com')
 
@@ -54,7 +54,7 @@ def check_dirs():
 # to: 邮件接受者  cache_id: queue 数据库中存储的 id，一般为填写的邮件名 condi: 查询时提供的搜索条件，会一起写在邮件里，方便归档
 def run(to, cache_id, condi):
     pack_dir = os.path.join(MEDIA_ROOT, 'data/data_cache/')
-    id_list = Queue.objects.filter(mail=cache_id).last().task_list             # 遇到同名取最近插入的一条数据   task_list: 搜索结果页面缓存的 id list 会传递到 queue 数据库里的 task_list
+    id_list = Queue.objects.filter(mail=to).last().task_list             # 遇到同名取最近插入的一条数据   task_list: 搜索结果页面缓存的 id list 会传递到 queue 数据库里的 task_list
     if not id_list:
         return
     else:
@@ -75,7 +75,8 @@ def run(to, cache_id, condi):
             
             e = send_mail(dict(to=to, sub='Data Packed Done',
                                content='''
-                               Hi %s:    
+                               Hi %s:
+
                                     Your data is done into NAS:/public/data_collected/%s.tar.gz
                                     With Searching conditions: %s
                                     '''
