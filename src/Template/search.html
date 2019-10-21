@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -142,7 +141,14 @@
                             <th scope="col">TYPE</th>
                             <th scope="col">PROJECT</th>
                             <th scope="col">TIME ADDED</th>
-                            <th scope="col">Download</th>
+                            <th scope='col'>Preview</th>
+                            <th scope="col">Select All
+                                <div style="display: inline-block;"></div>
+                                <div class="custom-control custom-checkbox" style="display: inline-block;">
+                                    <input type="checkbox" class="custom-control-input" id = "sel-all-input" checked>
+                                    <label class="custom-control-label" for="sel-all-input"></label>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -153,8 +159,11 @@
                             <td>N/A</td>
                             <td>N/A</td>
                             <td>
-                                <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input ckb" id = "customCheck1">
+                                <img class="preview" src="/media/b9bb839b1b1b161e01f0e6fda3130d8e.jpg" alt="b9bb839b1b1b161e01f0e6fda3130d8e.jpg">
+                            </td>
+                            <td>
+                                <div class="custom-control custom-checkbox" style="display:inline-block;">
+                                    <input type="checkbox" class="custom-control-input ckb" id = "customCheck1" value = "" checked>
                                     <label class="custom-control-label" for="customCheck1"></label>
                                 </div>
                             </td>
@@ -206,6 +215,15 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="modal">
+        <!-- The Close Button -->
+        <span class="close">&times;</span>
+        <!-- Modal Content (The Image) -->
+        <img class="modal-content">
+        <!-- Modal Caption (Image Text) -->
+        <div class="modal-caption"></div>
     </div>
 </body> 
 </html>

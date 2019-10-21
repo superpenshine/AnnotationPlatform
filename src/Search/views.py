@@ -65,8 +65,9 @@ def select(data, cond):
                 time_add__lte=datetime.strptime(later, '%m/%d/%Y'))
         elif k == 'tags':                                                                       # 逗号分隔的 tag_en 必须要存在于 Tags 表中
             t = v.split(',')
-            ids = [i.id for i in Tags.objects.filter(tag_en=k) if k in t]
-            data = data.filter(tags__contains=list(ids))                       
+            # ids = [i.id for i in Tags.objects.filter(tag_en=k) if k in t]
+            # data = data.filter(tags__contains=ids)          
+            data = data.filter(tags__contains=t)             
         else:
             print(f"INFO: Undefined parameter: {k}, value: {v}")
             continue
@@ -152,12 +153,15 @@ class Query():
     def show_page(self, request):
         CACHE = self.cache
         res = CACHE.filter(ano_type='pascal_voc').order_by('id')                                   # 取出搜索结果
+        n_res = res.count()
         pag = Paginator(res, 10)                                                                   # 分页展示，每页取10个结果，可调整
         page = request.GET.get('page')
-        data = pag.get_page(page)                                                                  # 获取每一页的结果
         # Construct data field
+        if int(page) > pag.num_pages:
+            page = pag.num_pages
+        data = pag.get_page(page)                                                                  # 获取每一页的结果
         data = self.page_to_dict(data)
-        context = {'total': res.count(), 'data': data, 'page': page}
+        context = {'total': n_res, 'data': data, 'page': page}
         return JsonResponse(context, safe=False)
 
     # 将pagenator数据转化为dict
@@ -167,7 +171,7 @@ class Query():
             return {}
         fields = [f.name for f in data[0]._meta.fields]
         data_l = []
-        for row in range(max(10, len(data))):
+        for row in range(min(10, len(data))):
             row_d = {}
             for attr in fields:
                 row_d[attr] = getattr(data[row], attr)
@@ -176,8 +180,6 @@ class Query():
 
     # 跳转打包路径
     def red_download(self, request):
-        # import pdb
-        # pdb.set_trace()
         if self.q:
             q = self.q
             CACHE = self.cache
@@ -192,10 +194,12 @@ class Query():
     # 下载
     def dl(self, request):
         if self.req:
+            mail = request.POST.get('mail')
+            unchecked = request.POST.get('unchecked')
             CACHE = self.cache
             # CACHE = CACHE.filter(ano_type='pascal_voc')                                           # 限制打包的标注格式只能式pascal_voc
             ids = [str(i.id) for i in CACHE]
-            mail = request.POST.get('mail')
+            ids = list(set(ids) - set(unchecked))
             Queue.objects.create(mail=mail, task_list=ids)                    # 把 id 列表存入队列
             req_dict = "req="+self.req
             return redirect(f'/download?mail={mail}&{req_dict}')

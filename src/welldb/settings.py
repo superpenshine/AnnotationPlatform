@@ -180,5 +180,6 @@ MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
 
 # do the same for media files, it must match /opt/services/welldb/media/
-MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
+# MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 # MEDIA_ROOT = '/data/JPEGImages/'                                     # 图片访问路径映射
+MEDIA_ROOT = '/home/wwl/datasets_default/JPEGImages'

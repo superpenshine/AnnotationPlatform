@@ -26,6 +26,8 @@ class Index():
             self.hash = im.hash
             ano_for = Annotation.objects.filter(hash=im.hash)       # 取出标签 
             get_im = self.im_url+im.hash+'.jpg'                     # 文件完整访问路径 
+            import pdb
+            pdb.set_trace()
             ano_for = ano_for[0]                                    # ano_for is list typed obj
             scene = ano_for.project_scene 
             ptype = ano_for.project_type

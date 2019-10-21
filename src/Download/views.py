@@ -14,4 +14,5 @@ def down(request):
     # task = Thread(target=run, args=(mail['to'], mail['id'], request.GET['q']))
     task = Thread(target=run, args=(mail_addr, id, request.GET.get('req')))
     task.start()
-    return render(request, 'info.html', {'msg': 'it will send an email when it\'s done'})        # info 会统一转到 info.html 页面
+    # return render(request, 'info.html', {'msg': 'it will send an email when it\'s done'})        # info 会统一转到 info.html 页面
+    return HttpResponse(content=f'A notification will be sent to { mail_addr } when it is done', status=200)

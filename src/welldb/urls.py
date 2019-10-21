@@ -26,4 +26,3 @@ urlpatterns = [
     path('filter/', include('Filter.urls')),                                   # 数据检查和修正
     path('', include('Login.urls'))                                            # 主页和用户管理
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)              # dev 模式的静态图片管理，在 product模式下请关闭并使用nginx
-# urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
