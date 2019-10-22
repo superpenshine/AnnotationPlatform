@@ -51,6 +51,7 @@ def read_Prj(folder):
         return
 
 # 图片和xml 重命名，使用 https://github.com/Jetsetter/dhash 库
+# d:临时目录
 def rename(d):
     for root, dirs, files in os.walk(d):
         for f in tqdm(files):
@@ -86,7 +87,7 @@ def run(url):
     name = os.path.basename(filename).split('.')[0]                            # 取文件名，和打包文件夹命名格式一致 exp: gate_plate-num_daxie_2018-01-01_night_double.tar.gz
     print('unarchiving file', name)                                            
     unarchive(os.path.join(dst, filename), os.path.join(dst, name))            # 解压到临时目录
-    ano_path = os.path.join(f'{dst}/{name}', 'Annotations')
+    ano_path = os.path.join(f'{dst}/{name}', 'Annotations')                    # 假设从nas下载的压缩包有此2文件夹
     img_path = os.path.join(f'{dst}/{name}', 'JPEGImages')
 
     task = Thread(target=rename, args=(dst,))                                  # 多线程方式进行重命名
