@@ -1,14 +1,13 @@
-import logging
-from datetime import datetime
-
-from django.core.paginator import Paginator
-from django.shortcuts import redirect, render
-from django.http import JsonResponse, HttpResponse
 import urllib
+import logging
+
 from .models import Annotation, Queue, Tags
+from datetime import datetime
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import redirect, render
+from django.core.paginator import Paginator
 
 # Create your views here.
-
 
 # 主入口
 def index(request):

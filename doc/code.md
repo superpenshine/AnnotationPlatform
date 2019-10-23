@@ -2,11 +2,12 @@
 
 ##### *Search module*
 - url routers
-    1. 显示搜索框 views.index
-    2. 根据搜索框中的条件进入 views.Query.search
-    3. 传递查询结果到 views.Query.show_res
-    4. 确认无误后填写邮箱，进入带跳转功能的 views.Query.red_download
-    5. 进入Download module 打包并返回 info.html,显示信息
+    1. 显示dropdown: views.index
+    2. 自动根据已输入搜索条件更新未填写dropdown可用选项
+    3. 根据搜索框中的条件进入 views.Query.search
+    4. 传递查询结果到 views.Query.show_res
+    5. 确认无误后填写邮箱，进入带跳转功能的 views.Query.red_download
+    6. 进入Download module 打包并返回 info.html,显示信息
 
 - views
     1. Query为主类，提供函数间的共享缓存
@@ -36,6 +37,10 @@
 
 ##### *Upload module*
 - url routers
-1. 输入框从NAS提取压缩包,默认为zip或者tar.gz格式，命名以 *scene_type_prj_time_tags* 为规范，每一个label之内只能包含 - ，不可包含 _ 。 示例： **gate_plate-num_daxie_2018-01-01_night_double**
-2. 在临时文件夹解压，并存入数据库，现阶段使用测试数据表
-3. 还未加入发送邮件功能
+1. 输入框从NAS提取压缩包,默认为zip或者tar.gz格式，命名以 *scene_type_prj_time_tags1_tags2* 为规范，每一个label之内只能包含 - ，不可包含 _ 。 示例1： **/WellOcean_Data/Picture/label/Ahj_fix_label/plate-num/gate_plate-num_daxie_2018-01-01_night_double.tar.gz**
+示例2： **/WellOcean_Data/Picture/label/Ahj_fix_label/plate-num/gate_plate-num_daxie_2018-01-01.zip**
+   输入框也可输入NAS路径名， 默认以 / 开头。 路径下所有压缩包将被下载归档。
+示例1： **/WellOcean_Data/Picture/label/Ahj_fix_label/plate-num**
+2. 在临时文件夹解压，并存入数据库，现阶段使用测试数据表(AnoTest)， 数据查重完成。
+3. 已添加发送邮件功能
+4. 未加入图片转储功能

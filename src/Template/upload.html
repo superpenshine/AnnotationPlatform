@@ -1,12 +1,66 @@
 {%block content%}
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>    
+    <!-- Online Sources -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    <!-- Custom Static Files -->
+    <script  src="{% static 'js/ajax_f.js' %}" type="text/javascript"></script>
+    <script  src="{% static 'js/upload.js' %}" type="text/javascript"></script>
+    <link href="{% static 'css/upload.css' %}" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <div class="row">
+        <div class="col-9">
+            <form id="main_upload_form", action="/upload/" method="POST">
+                {% csrf_token %}
+                <div class="form-group form-row">
+                    <div class="col-1"></div>
+                    <div class="col-1">
+                        <label for='nas-url-input' class="col-form-label">NAS Location</label>
+                    </div>
+                    <div class="col-9">
+                        <input id='nas-url-input' type="text" class="form-control" name='url'>
+                    </div>
+                </div>
+                <div class="form-group form-row">
+                    <div class="col-1"></div>
+                    <div class="col-1">
+                        <label for='email-input' class="col-form-label">Email</label>
+                    </div>
+                    <div class="col-3">
+                        <input id='email-input' type="text" class="form-control" name='email'>
+                    </div>
+                </div>
+                <div class="form-group form-row">
+                    <div class="col-1"></div>
+                    <div class="col-1"></div>
+                    <div class="col-1">
+                        <button type="submit" class="btn btn-primary" id="upload-button">Upload</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
+
 <form id='from_nas' action='/upload' method='GET'>
     <label for="id_url">NAS location:</label>               <!--以默认分享链接为准， / 开头，不包含 /volume1-->
-    <input id='id_url' name='file'>
+    <input id='id_url' name='url'>
     <input type="submit" value="upload">
 </form>
+
 <div>
-    <p>示例文件名： gate_plate-num_daxie_2018-01-01_night_yellow</p>
-    <p>对应： scene_type_project_time_tags</p>
+    <p>示例文件名： /WellOcean_Data/Picture/label/Ahj_fix_label/plate-num/gate_plate-num_daxie_2018-01-01_night_double.tar.gz</p>
+    <p>文件名对应： scene_type_project_time_tag1_tag2</p>
+    <p>示例文件路径： /WellOcean_Data/Picture/label/Ahj_fix_label/plate-num/</p>
     <p>下划线分隔对应不同的输入Label,同一Label之间只允许出现短横(-),特殊标签可以有多个，具体见标注文档</p>
 
 </div>

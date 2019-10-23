@@ -3,7 +3,7 @@ import shutil
 import xml.etree.ElementTree as et
 
 from xml.dom import minidom
-
+from welldb.settings import CONFIG
 
 # 从 数据库中 的 data（queryset类型） 转换为 xml string
 def gen_XML(data):
@@ -46,9 +46,10 @@ def gen_XML(data):
 # 转移图片和生成xml到新的文件夹
 # im： queryset 类型, dst: 打包到的主文件夹, a: 主文件夹下的 xml 存储位置， i: 主文件夹下 图片 的存储位置
 def pack(im, dst, a, i):
-    src = '/home/wwl/datasets_default/JPEGImages'
-    imc = os.path.join(src, im.hash+'.'+im.format["image"])                            # 图片的源路径
-    if os.path.exists(imc):
+    # src = '/workspace/data/JPEGImages/'                                              # 图片的源路径
+    src = CONFIG.img_path
+    imc = os.path.join(src, im.hash+'.'+im.format["image"])                            
+    if os.path.exists(imc):                                                            # Check if img exists
         shutil.copy(imc, os.path.join(i, im.hash+'_' +
                                       str(im.time_add)+'.'+im.format["image"]))        # 存储图片名为 hash_2019-08-01.jpg
         ano = gen_XML(im)

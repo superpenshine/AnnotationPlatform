@@ -1,15 +1,27 @@
+body{
+  font-family: sans-serif;
+  color:#303030;
+}
+
 .main-block{
-	display: inline-block;
-	vertical-align: top;
+    display: inline-block;
+    vertical-align: top;
 }
 
 #right{
-	width:50%;
+    width:50%;
 }
 
 #curr-page{
-	text-align: center;
+    text-align: center;
 }
+
+.table td, .table th{
+    vertical-align: baseline;
+    text-align: center;
+}
+
+
 
 /*For modal display*/
 /* Style the Image Used to Trigger the Modal */

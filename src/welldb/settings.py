@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from .config import get_config, print_usage
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -183,3 +184,5 @@ STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
 # MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 # MEDIA_ROOT = '/data/JPEGImages/'                                     # 图片访问路径映射
 MEDIA_ROOT = '/home/wwl/datasets_default/JPEGImages'
+
+CONFIG, unparsed = get_config()

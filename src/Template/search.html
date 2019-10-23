@@ -14,9 +14,11 @@
     <link href="{% static 'css/search.css' %}" rel="stylesheet" type="text/css">
 
     <!-- For Date Time Picker -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css" /> -->
+    <!-- <script type="text/javascript" src="https://cdn.bootcss.com/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/daterangepicker.css' %}" />
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.bootcss.com/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"></script>
+    <script type="text/javascript" src="{% static 'js/daterangepicker.js' %}"></script>
 </head>
 
 <body>
@@ -36,8 +38,10 @@
             <form id="main_search_form", action="/search/search_with_cond" method="POST">
                 {% csrf_token %}
                 <div class="form-row justify-content-center">
-                    <div class="form-group col-4">
+                    <div class="form-group col-2 align-self-end">
                         <label for="input-scene">Scene</label>
+                    </div>
+                    <div class = "form-group col-4">
                         <select id="input-scene" class="form-control" name = 'scene'>
                         {% if scenes %}
                             {% for s in scenes %}
@@ -48,8 +52,10 @@
                     </div>
                 </div>
                 <div class="form-row justify-content-center">
+                    <div class="form-group col-2 align-self-end">
+                        <label for="input-scene">Type</label>
+                    </div>
                     <div class="form-group col-4">
-                        <label for="input-type">Type</label>
                         <select id="input-type" class="form-control" name = 'type'>
                         {% if types %}
                             {% for t in types %}
@@ -60,8 +66,10 @@
                     </div>
                 </div>
                 <div class="form-row justify-content-center">
+                    <div class="form-group col-2 align-self-end">
+                        <label for="input-scene">Project</label>
+                    </div>
                     <div class="form-group col-4">
-                        <label for="input-project">Project</label>
                         <select id="input-project" class="form-control" name = 'project'>
                         {% if projects %}
                             {% for p in projects %}
@@ -72,8 +80,10 @@
                     </div>
                 </div>
                 <div class="form-row justify-content-center">
+                    <div class="form-group col-2 align-self-end">
+                        <label for="input-scene">Tag</label>
+                    </div>
                     <div class="form-group col-4">
-                        <label for="input-tags">Tag</label>
                         <select id="input-tags" class="form-control" name = 'tags'>
                         <!-- <option class="gen" selected>*</option> -->
                         {% if tags %}
@@ -86,8 +96,10 @@
                     </div>
                 </div>
                 <div class="form-row justify-content-center">
+                    <div class="form-group col-2 align-self-end">
+                        <label for="input-scene">Date Range</label>
+                    </div>
                     <div class='form-group col-4'>
-                        <label for="daterangepicker">Date Range</label>
                         <input class="form-control" id="daterangepicker" type="text" name="daterange">
                     </div>
                     <script>
@@ -130,60 +142,56 @@
         </div>
     </div>
     <div class="main-block", id="right">
-        <div class = 'row justify-content-end'>
-            <div class="col-12">
-
-                <table class="table table-striped">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">SCENE</th>
-                            <th scope="col">TYPE</th>
-                            <th scope="col">PROJECT</th>
-                            <th scope="col">TIME ADDED</th>
-                            <th scope='col'>Preview</th>
-                            <th scope="col">Select All
-                                <div style="display: inline-block;"></div>
-                                <div class="custom-control custom-checkbox" style="display: inline-block;">
-                                    <input type="checkbox" class="custom-control-input" id = "sel-all-input" checked>
-                                    <label class="custom-control-label" for="sel-all-input"></label>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th scope="row">N/A</th>
-                            <td>N/A</td>
-                            <td>N/A</td>
-                            <td>N/A</td>
-                            <td>N/A</td>
-                            <td>
-                                <img class="preview" src="/media/b9bb839b1b1b161e01f0e6fda3130d8e.jpg" alt="b9bb839b1b1b161e01f0e6fda3130d8e.jpg">
-                            </td>
-                            <td>
-                                <div class="custom-control custom-checkbox" style="display:inline-block;">
-                                    <input type="checkbox" class="custom-control-input ckb" id = "customCheck1" value = "" checked>
-                                    <label class="custom-control-label" for="customCheck1"></label>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class = 'row'>
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">SCENE</th>
+                        <th scope="col">TYPE</th>
+                        <th scope="col">PROJECT</th>
+                        <th scope="col">TIME ADDED</th>
+                        <th scope='col'>Preview</th>
+                        <th scope="col">Select All
+                            <div style="display: inline-block;"></div>
+                            <div class="custom-control custom-checkbox" style="display: inline-block;">
+                                <input type="checkbox" class="custom-control-input" id = "sel-all-input" checked>
+                                <label class="custom-control-label" for="sel-all-input"></label>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">N/A</th>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td>
+                            <img class="preview" src="/media/b9bb839b1b1b161e01f0e6fda3130d8e.jpg" alt="b9bb839b1b1b161e01f0e6fda3130d8e.jpg">
+                        </td>
+                        <td>
+                            <div class="custom-control custom-checkbox" style="display:inline-block;">
+                                <input type="checkbox" class="custom-control-input ckb" id = "customCheck1" value = "" checked>
+                                <label class="custom-control-label" for="customCheck1"></label>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="row"></div>
-        <div class = 'row justify-content-between align-items-center'>
-            <div class="col-6" >
-                <form id='dl-form' action="/search/dl" method="POST">
-                    {% csrf_token %}
-                    <div style="display: inline-block;">
-                        <label for="input-email">Email</label>
+        <div class = 'row justify-content-between'>
+            <form id='dl-form' action="/search/dl" method="POST">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group col-2 align-self-center">
+                        <label class="col-form-label" for="input-email">Email</label>
                     </div>
-                    <div style="display: inline-block;">
-                        <input id="input-email" class="form-control" type="text" name="mail" maxlength="100">
+                    <div class= "col-7 form-group">
+                        <input class="col-form-label" id="input-email" class="form-control" type="text" name="mail" maxlength="100">
                     </div>
-                    <div style="display: inline-block;">
+                    <div class="form-group col-2 align-self-center">
                         <button type="submit" class="btn btn-primary" id="download-button">Download</button>
                     </div>
                 </form>
@@ -211,7 +219,7 @@
                     </nav>
                 </div>
                 <div class="row justify-content-end">
-                    <p id='total'>Total number of record: 0</p>
+                    <p id='total'>Total number of records: 0</p>
                 </div>
             </div>
         </div>

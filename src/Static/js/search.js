@@ -1,4 +1,60 @@
-//JS file for search.html
+// JS file for search.html
+
+
+// Local memory
+var mem = {"input-scene":'*', "input-type":'*',"input-project":'*',"input-tags":'*', "daterangepicker":''};
+//Local memory to remember unchecked checkboxes
+var unchecked = [];
+
+// Update options availabel in dropdown lists
+function update_opt(msg){
+    var scene = $("#input-scene")[0];
+    var type = $("#input-type")[0];
+    var project = $("#input-project")[0];
+    var tag = $("#input-tags")[0];
+
+    // Update Options
+    for (var s in msg['scenes']){
+        var text = msg['scenes'][s];
+        var opt = document.createElement('option');
+        opt.classList.add('gen');
+        opt.textContent = text;
+        scene.appendChild(opt);
+        if (text == mem['input-scene']) {
+            opt.selected = true;
+        }
+    }
+    for (var t in msg['types']){
+        var text = msg['types'][t];
+        var opt = document.createElement('option');
+        opt.classList.add('gen');
+        opt.textContent = text;
+        type.appendChild(opt);
+        if (text == mem['input-type']) {
+            opt.selected = true;
+        }
+    }
+    for (var p in msg['projects']){
+        var text = msg['projects'][p];
+        var opt = document.createElement('option');
+        opt.classList.add('gen');
+        opt.textContent = text;
+        project.appendChild(opt);
+        if (text == mem['input-project']) {
+            opt.selected = true;
+        }
+    }
+    for (var t in msg['tags']){
+        var text = msg['tags'][t];
+        var opt = document.createElement('option');
+        opt.classList.add('gen');
+        opt.textContent = text;
+        tag.appendChild(opt);
+        if (text == mem['input-tags']) {
+            opt.selected = true;
+        }
+    }
+}
 
 // Update UI on tabel refresh
 function update_ui(page, total){
@@ -22,12 +78,12 @@ function update_ui(page, total){
     cur_page = $("#curr-page")[0];
     cur_page.placeholder = page.toString();
     cur_page.value = null;
+
     if (total <= 10){
         cur_page.disabled=true;
     } else {
         cur_page.disabled=null;
     }
-    $("#sel-all-input")[0].checked = true;
 }
 
 // Update table entries
@@ -38,6 +94,8 @@ function update_table(data){
     // $('tbody').children('tr').each(function(){
     //     $(this).children('th, td:lt(4)').remove();
     // })
+    var sel_all_input = $("#sel-all-input")[0];
+    sel_all_input.checked = true;
     var i = 1
     for (var r in data) {
         //change table data
@@ -61,6 +119,7 @@ function update_table(data){
         img_preview.alt = hash + '.jpg';
 
         // Update checkbox bindings
+        var id_str = data[r]['id'].toString();
         div_checkbox.classList.add("custom-control");
         div_checkbox.classList.add("custom-checkbox");
         input_checkbox.classList.add("custom-control-input");
@@ -68,10 +127,15 @@ function update_table(data){
         input_checkbox.classList.add('.active');
         input_checkbox.id = "customCheck" + i;
         input_checkbox.type = "checkbox";
-        input_checkbox.value = data[r]['id'].toString();
+        input_checkbox.value = id_str;
         label_checkbox.classList.add("custom-control-label");
         label_checkbox.setAttribute ("for", "customCheck" + i);
-        input_checkbox.setAttribute("checked", "");
+        // input_checkbox.setAttribute("checked", "");
+        if ($.inArray(id_str, unchecked) == -1) {
+            input_checkbox.checked = true;
+        } else {
+            sel_all_input.checked = null;
+        }
         tbody[0].appendChild(tr);
         div_checkbox.appendChild(input_checkbox);
         div_checkbox.appendChild(label_checkbox);
@@ -97,18 +161,67 @@ function update_table(data){
     }
 }
 
+// Update dropdown options for current date range
+$(document).on('click', '.applyBtn', function(){
+    // Gather current conditions
+    var data = $('#main_search_form').serialize();
+    // Update local memory
+    mem['daterangepicker'] = $("#daterangepicker")[0].value;
+    $('.gen').remove();
+    var url = "/search/update_opts";
+    ajax({ 
+        type:"POST", 
+        url:url,
+        data: data, 
+        dataType:"json", 
+        success:function(msg){ 
+            console.log(msg);
+            update_opt(msg);
+        }, 
+        error:function(){ 
+            console.log("error"); 
+        } 
+    });
+});
+
+// Update dropdown options for current filter condition
+$(function() {
+    $(".form-control").change(function(e){
+        // Gather current conditions
+        var data = $('#main_search_form').serialize();
+        // Update local memory
+        mem[$(this)[0].id] = $(this)[0].value;
+        $('.gen').remove();
+        var url = "/search/update_opts";
+        ajax({ 
+            type:"POST", 
+            url:url,
+            data: data, 
+            dataType:"json", 
+            success:function(msg){ 
+                console.log(msg);
+                update_opt(msg);
+            }, 
+            error:function(){ 
+                console.log("error"); 
+            } 
+        });
+    });
+})
+
 // Trigger for search condition submit button
 $(function(){
     $("#main_search_form").submit(function(e) {
         e.preventDefault();
-        var form = $(this);
-        var url = form.attr('action');
-        var type = form.attr('method');
+        var type = $(this).attr('method');
+        var url = $(this).attr('action');
+        var data = $(this).serialize();
+        unchecked = [];
         ajax({ 
             type:type, 
             url:url, 
             dataType:"json", 
-            data:form.serialize(), 
+            data:data, 
             success:function(msg){ 
                 var total = msg.total, page = parseInt(msg.page), data = msg.data;
                 if (total == 0){}
@@ -123,6 +236,7 @@ $(function(){
                 console.log("error"); 
             } 
         });
+
     });  
 })
 
@@ -180,84 +294,6 @@ $(function(){
     });
 })
 
-// Local memory
-var mem = {"input-scene":'*', "input-type":'*',"input-project":'*',"input-tags":'*', "daterangepicker":''};
-// For update dropdown options for current filter conditions
-$(function() {
-    $(".form-control").change(function(e){
-        // alert('aa');
-        // Gather current conditions
-        var data = $('#main_search_form').serialize();
-        //update local memory
-        mem[$(this)[0].id] = $(this)[0].value;
-
-        console.log(mem);
-        $('.gen').remove();
-        var url = "/search/update_opts";
-
-        ajax({ 
-            type:"POST", 
-            url:url,
-            data: data, 
-            dataType:"json", 
-            success:function(msg){ 
-                console.log(msg);
-                var scene = $("#input-scene")[0];
-                var type = $("#input-type")[0];
-                var project = $("#input-project")[0];
-                var tag = $("#input-tags")[0];
-
-                // Update Options
-                for (var s in msg['scenes']){
-                    var text = msg['scenes'][s];
-                    var opt = document.createElement('option');
-                    opt.classList.add('gen');
-                    opt.textContent = text;
-                    scene.appendChild(opt);
-                    if (text == mem['input-scene']) {
-                        opt.selected = true;
-                    }
-                }
-                for (var t in msg['types']){
-                    var text = msg['types'][t];
-                    var opt = document.createElement('option');
-                    opt.classList.add('gen');
-                    opt.textContent = text;
-                    type.appendChild(opt);
-                    if (text == mem['input-type']) {
-                        opt.selected = true;
-                    }
-                }
-                for (var p in msg['projects']){
-                    var text = msg['projects'][p];
-                    var opt = document.createElement('option');
-                    opt.classList.add('gen');
-                    opt.textContent = text;
-                    project.appendChild(opt);
-                    if (text == mem['input-project']) {
-                        opt.selected = true;
-                    }
-                }
-                for (var t in msg['tags']){
-                    var text = msg['tags'][t];
-                    var opt = document.createElement('option');
-                    opt.classList.add('gen');
-                    opt.textContent = text;
-                    tag.appendChild(opt);
-                    if (text == mem['input-tags']) {
-                        opt.selected = true;
-                    }
-                }
-            }, 
-            error:function(){ 
-                console.log("error"); 
-            } 
-        });
-    });
-})
-
-//Local memory to remember unchecked checkboxes
-var unchecked = [];
 //For selecting required items in the table
 $(document).on('click','.ckb',function(e){
     var val = $(this).val();
@@ -269,9 +305,11 @@ $(document).on('click','.ckb',function(e){
     } else {
         // Add to checked
         unchecked.push(val);
+        $('#sel-all-input')[0].checked = null;
     }
     console.log(unchecked);
 });
+
 // $(document).on('click','.ckb:not(:checked)',function(e){
 //     unchecked.push($(this).val());
 //     console.log(unchecked);
@@ -313,7 +351,7 @@ $(function(){
             dataType:"text", 
             data:data, 
             success:function(msg){ 
-                console.log(msg);
+                alert(msg);
             }, 
             error:function(msg){ 
                 alert(msg);
@@ -323,10 +361,10 @@ $(function(){
 })
 
 $(document).on('click', ".preview", function(){
-        $(".modal")[0].style.display = "block";
-        $(".modal-content")[0].src = this.src;
-        $(".modal-caption")[0].innerHTML = this.alt;
-    });
+    $(".modal")[0].style.display = "block";
+    $(".modal-content")[0].src = this.src;
+    $(".modal-caption")[0].innerHTML = this.alt;
+});
 
 // When the user clicks on <span> (x), close the modal
 $(function(){
