@@ -96,27 +96,41 @@ function update_table(data){
     // })
     var sel_all_input = $("#sel-all-input")[0];
     sel_all_input.checked = true;
+    
     var i = 1
     for (var r in data) {
-        //change table data
-        var tr = document.createElement('tr')
-        var th = document.createElement('th');
-        var td_scene = document.createElement('td');
-        var td_type = document.createElement('td');
-        var td_project = document.createElement('td');
-        var td_time_added = document.createElement('td');
-        var td_preview = document.createElement('td');
-        var img_preview = document.createElement('img');
-        var td_checkbox = document.createElement('td');
-        var div_checkbox = document.createElement('div');
-        var input_checkbox = document.createElement('input');
-        var label_checkbox = document.createElement('label');
+        //Update table content
+        tr = document.createElement('tr'), 
+        th = document.createElement('th'), 
+        td_scene = document.createElement('td'), 
+        td_type = document.createElement('td'), 
+        td_project = document.createElement('td'), 
+        td_time_added = document.createElement('td'), 
+        td_preview = document.createElement('td'), 
+        img_preview = document.createElement('img'), 
+        td_checkbox = document.createElement('td'), 
+        div_checkbox = document.createElement('div'), 
+        input_checkbox = document.createElement('input'), 
+        label_checkbox = document.createElement('label');
+        th.setAttribute("scope", "row");
+        th.textContent = data[r]['id'];
+        td_scene.textContent = data[r]['project_scene'];
+        td_type.textContent = data[r]['project_type'];
+        td_project.textContent = data[r]['project'];
+        td_time_added.textContent = data[r]['time_add'];
+        tr.appendChild(th);
+        tr.appendChild(td_scene);
+        tr.appendChild(td_type);
+        tr.appendChild(td_project);
+        tr.appendChild(td_time_added);
 
         // Update preview
         hash = data[r]['hash']
         img_preview.classList.add("preview");
         img_preview.src = '/media/' + hash + '.jpg';
         img_preview.alt = hash + '.jpg';
+        td_preview.appendChild(img_preview);
+        tr.appendChild(td_preview);
 
         // Update checkbox bindings
         var id_str = data[r]['id'].toString();
@@ -130,33 +144,18 @@ function update_table(data){
         input_checkbox.value = id_str;
         label_checkbox.classList.add("custom-control-label");
         label_checkbox.setAttribute ("for", "customCheck" + i);
-        // input_checkbox.setAttribute("checked", "");
+        // Upon page change, check if entry in unchecked list
         if ($.inArray(id_str, unchecked) == -1) {
             input_checkbox.checked = true;
         } else {
             sel_all_input.checked = null;
         }
-        tbody[0].appendChild(tr);
         div_checkbox.appendChild(input_checkbox);
         div_checkbox.appendChild(label_checkbox);
-
-        // Update table content
-        th.setAttribute("scope", "row");
-        th.textContent = data[r]['id'];
-        td_scene.textContent = data[r]['project_scene'];
-        td_type.textContent = data[r]['project_type'];
-        td_project.textContent = data[r]['project'];
-        td_time_added.textContent = data[r]['time_add'];
-        td_preview.appendChild(img_preview);
         td_checkbox.appendChild(div_checkbox);
-
-        tr.appendChild(th);
-        tr.appendChild(td_scene);
-        tr.appendChild(td_type);
-        tr.appendChild(td_project);
-        tr.appendChild(td_time_added);
-        tr.appendChild(td_preview);
         tr.appendChild(td_checkbox);
+        tbody[0].appendChild(tr);
+
         i += 1;
     }
 }
@@ -179,7 +178,7 @@ $(document).on('click', '.applyBtn', function(){
             update_opt(msg);
         }, 
         error:function(){ 
-            console.log("error"); 
+            console.log("Error"); 
         } 
     });
 });
@@ -203,7 +202,7 @@ $(function() {
                 update_opt(msg);
             }, 
             error:function(){ 
-                console.log("error"); 
+                console.log("Error"); 
             } 
         });
     });
@@ -233,7 +232,7 @@ $(function(){
                 $("#total")[0].textContent = "Total number of records: "+total.toString();
             }, 
             error:function(){ 
-                console.log("error"); 
+                console.log("Error"); 
             } 
         });
 
@@ -257,7 +256,7 @@ $(function(){
                 update_ui(page, total);
             }, 
             error:function(){ 
-                console.log("error"); 
+                console.log("Error"); 
             } 
         });
     });
@@ -287,7 +286,7 @@ $(function(){
                     update_ui(page, total);
                 }, 
                 error:function(){ 
-                    console.log("error"); 
+                    console.log("Error"); 
                 } 
             });
         }

@@ -1,44 +1,29 @@
 import json
 import os
 import shutil
-import xml.etree.ElementTree as et
 import dhash
 from PIL import Image
 from tqdm import tqdm
 from .models import AnoTest
-from .parser import parse_date, guess_ano_folder, guess_img_folder
+from .parser import parse_date, guess_ano_folder, guess_img_folder, XMLParser
 from tempfile import mkdtemp
 from threading import Thread
 from Search.models import Tags
 from Download.tasks import send_mail
 
-# 解析 xml 文件，取出 size, objects 和 image format
-def read_XML(file):
-    tree = et.parse(file)
-    root = tree.getroot()
 
-    # Find image format
-    f_name = root.find('filename').text
-    img_format = f_name.split('.')[-1]
+# 从文件夹命名解析出 label   范例压缩文件: gate_plate-num_daxie_2018-01-01_night_double.tar.z 
+def read_Prj(folder):
+    f = folder.split('_')
+    # Need to verify the time format
+    time_added = parse_date(f[3])
 
-    # Find size
-    # s = root.find('img_size')
-    s = root.find('size')
-    size = {'width': s.find('width').text, 'height': s.find(
-        'height').text, 'depth': '3'}                                          # 默认 depth 为 3
-    # Find objects
-    objs = []
-    for obj in root.findall('object'):
-        name = obj.find('name').text
-        bndbox = obj.find('bndbox')
-        xmin = bndbox.find('xmin').text
-        ymin = bndbox.find('ymin').text
-        xmax = bndbox.find('xmax').text
-        ymax = bndbox.find('ymax').text
-        objs.append({'name': name, 'xmin': xmin,
-                     'ymin': ymin, 'xmax': xmax, 'ymax': ymax})
-
-    return img_format, size, objs
+    if len(f) == 4:
+        return {'project_scene': f[0], 'project_type': f[1], 'project': f[2], 'time_add': time_added}
+    elif len(f) > 4:
+        return {'project_scene': f[0], 'project_type': f[1], 'project': f[2], 'time_add': time_added, 'tags': f[4:]}
+    else:
+        return
 
 # 解压压缩文件至指定路径
 def unarchive(file, dst):
@@ -51,19 +36,6 @@ def unarchive(file, dst):
         return
 
     return
-
-# 从文件夹命名解析出 label   范例压缩文件: gate_plate-num_daxie_2018-01-01_night_double 
-def read_Prj(folder):
-    f = folder.split('_')
-    # Need to verify the time format
-    time_added = parse_date(f[3])
-
-    if len(f) == 4:
-        return {'project_scene': f[0], 'project_type': f[1], 'project': f[2], 'time_add': time_added}
-    elif len(f) > 4:
-        return {'project_scene': f[0], 'project_type': f[1], 'project': f[2], 'time_add': time_added, 'tags': f[4:]}
-    else:
-        return
 
 # 图片和xml 重命名，使用 https://github.com/Jetsetter/dhash 库生成hash值
 # d:临时目录
@@ -176,6 +148,7 @@ def run(url, email):
     task.start()
     task.join()
 
+    xml_parser = XMLParser()
     for base_n in cp_fnames_base:                                              # 对project内每个解压文件夹中的文件进行处理
         base_n_path = f'{tmp_proj}/{base_n}'
         # Guess file names
@@ -184,11 +157,11 @@ def run(url, email):
         
         for ano in os.listdir(ano_path):
             prj = read_Prj(base_n)                                             # 从文件夹名字取出label
-            # Find duplication
+            # Find duplicate entry in db
             if has_dup(prj['project'], ano[:-4]):
                 continue
-            # Read other info
-            img_format, size, objs = read_XML(os.path.join(ano_path, ano))
+            # Read annotation
+            img_format, size, objs = xml_parser.read_XML(os.path.join(ano_path, ano), proj = prj['project'])
             ano_json = {'annotation': {'objects': objs}}
             formats = {'image': img_format}
             # Get tags
@@ -201,6 +174,7 @@ def run(url, email):
             AnoTest.objects.create(hash=ano[:-4], size=size, format=formats, ano_type='pascal_voc', ano=ano_json, project_scene=prj['project_scene'], project_type=prj['project_type'], project=prj['project'], time_add=prj['time_add'], tags=tag_ids)
             # TODO: Save img to local volume
 
+    # Send notification to email
     e = send_mail(dict(to=email, sub='Data Upload Done',
                        content='''
                        Hi %s:

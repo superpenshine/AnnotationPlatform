@@ -1,7 +1,7 @@
 from random import randint
 
 from django.db.models import Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 
 from Search.models import Annotation, Tags
@@ -26,8 +26,8 @@ class Index():
             self.hash = im.hash
             ano_for = Annotation.objects.filter(hash=im.hash)       # 取出标签 
             get_im = self.im_url+im.hash+'.jpg'                     # 文件完整访问路径 
-            import pdb
-            pdb.set_trace()
+            # import pdb
+            # pdb.set_trace()
             ano_for = ano_for[0]                                    # ano_for is list typed obj
             scene = ano_for.project_scene 
             ptype = ano_for.project_type
@@ -62,7 +62,6 @@ class Index():
                        'fixitem': fixitem,                                                  # 转换为 string 类型的 name 列表
                        'fixtag': fixtag,                                                    # 转换为 string 类型的 tag_en 列表
                        'imhash': im.hash}                                                   # 图片 hash，用于不同页面的参数传递和同步 
-
         if 'state' in request.GET:
             return redirect(f'/filter/confirm?h={self.hash}&state={request.GET["state"]}')  # 如果有检查反馈的 rquest 则跳转 checked 函数处理
         else:
@@ -77,6 +76,7 @@ def checked(request):
         s.save()
     else:
         pass
+        
     return redirect('/filter')                                                              # 默认跳转 /filter
 
 
@@ -120,3 +120,17 @@ def decode(d):
         ano.append({'name': name, 'xmin': xmin,
                     'xmax': xmax, 'ymin': ymin, 'ymax': ymax})
     return ano
+
+'''
+从数据库中通过hash检索annotation返还
+'''
+def get_info(request):
+    _hash = request.GET.get('hash')
+    rows = Annotation.objects.filter(hash=_hash)[0]
+    pname = rows.project
+    pscene = rows.project_scene
+    ptype = rows.project_type
+    ano = decode(rows.ano)
+    context = {'project': pname, 'scene':pscene, 'type': ptype, 'ano': ano}
+
+    return JsonResponse(context, safe=False)

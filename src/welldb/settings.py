@@ -185,4 +185,5 @@ STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
 # MEDIA_ROOT = '/data/JPEGImages/'                                     # 图片访问路径映射
 MEDIA_ROOT = '/home/wwl/datasets_default/JPEGImages'
 
+# Custom project settings defined in welldb/config.py
 CONFIG, unparsed = get_config()

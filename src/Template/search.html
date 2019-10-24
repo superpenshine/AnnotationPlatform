@@ -11,7 +11,7 @@
     <!-- Custom Static Files -->
     <script  src="{% static 'js/ajax_f.js' %}" type="text/javascript"></script>
     <script  src="{% static 'js/search.js' %}" type="text/javascript"></script>
-    <link href="{% static 'css/search.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/search.css' %}" type="text/css" rel="stylesheet">
 
     <!-- For Date Time Picker -->
     <!-- <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css" /> -->
@@ -183,7 +183,7 @@
         </div>
         <div class = 'row justify-content-between'>
             <form id='dl-form' action="/search/dl" method="POST">
-                {% csrf_token %}
+            {% csrf_token %}
                 <div class="form-row">
                     <div class="form-group col-2 align-self-center">
                         <label class="col-form-label" for="input-email">Email</label>
@@ -194,8 +194,8 @@
                     <div class="form-group col-2 align-self-center">
                         <button type="submit" class="btn btn-primary" id="download-button">Download</button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
             <div class="col-3">
                 <div class="row justify-content-end">
                     <nav aria-label="Page navigation example">

@@ -37,10 +37,28 @@
 
 ##### *Upload module*
 - url routers
-1. 输入框从NAS提取压缩包,默认为zip或者tar.gz格式，命名以 *scene_type_prj_time_tags1_tags2* 为规范，每一个label之内只能包含 - ，不可包含 _ 。 示例1： **/WellOcean_Data/Picture/label/Ahj_fix_label/plate-num/gate_plate-num_daxie_2018-01-01_night_double.tar.gz**
+1. 输入框从NAS提取压缩包,默认为zip或者tar.gz格式，命名以 *scene_type_prj_time_tags* 为规范，每一个label之内只能包含 - ，不可包含 _ 。
+示例1： **/WellOcean_Data/Picture/label/Ahj_fix_label/plate-num/gate_plate-num_daxie_2018-01-01_night_double.tar.gz**
 示例2： **/WellOcean_Data/Picture/label/Ahj_fix_label/plate-num/gate_plate-num_daxie_2018-01-01.zip**
+
    输入框也可输入NAS路径名， 默认以 / 开头。 路径下所有压缩包将被下载归档。
 示例1： **/WellOcean_Data/Picture/label/Ahj_fix_label/plate-num**
-2. 在临时文件夹解压，并存入数据库，现阶段使用测试数据表(AnoTest)， 数据查重完成。
+2. 在临时文件夹解压，并存入数据库，现阶段使用测试数据表(AnoTest)。
 3. 已添加发送邮件功能
 4. 未加入图片转储功能
+5. 现阶段hash完全由图片像素决定，导致同张图片在不同项目中出现会被认为是重复。可修复为由项目名称＋已有hash。
+
+- 压缩包内路径规范
+1. 一个压缩包内包含一个Annotations文件夹及一个JPEGImages文件夹。 如需添加可能读取的文件夹名， 请修改Upload/parser.py
+示例压缩包路径:
+    gate_plate-num_daxie_2018-01-01.zip
+        -Annotations
+            -153507603249700001 back OSSU 1700037 22K7 False.xml
+            -...
+        -JPEGImages
+            -153507603249700001 back OSSU 1700037 22K7 False.jpg
+            -...
+
+- Annotation读取
+1. 请在Upload/parser.py中增加XML文件读取方法， 并在类初始化方法中注册新的读取方法
+2. read_xml方法将遍历所有已注册的方法， 并以第一次成功读取的结果为准。
