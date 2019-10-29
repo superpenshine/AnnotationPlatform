@@ -20,65 +20,72 @@ function update_table(data) {
     tr_proj.appendChild(td_proj);
     tbody_proj[0].appendChild(tr_proj);
 
-    // Update annotation table
+    var small = document.querySelector('#small');
+    // Update Annotation table
     for (var r in data.ano){
+        ano_row = data.ano[r]
         var tr_ano = document.createElement('tr'),
-        td_name = document.createElement('td'), 
-        td_color = document.createElement('td'); 
-        td_name.textContent = data.ano[r]['name'];
+        td_name = document.createElement('td'),
+        input_name = document.createElement('input'), 
+        td_coord = document.createElement('td'), 
+        input_coord = document.createElement('input'), 
+        td_preview = document.createElement('td'),  
+        td_color = document.createElement('td'), 
+        canvas_preview = document.createElement('canvas'); 
 
+        input_name.classList.add('form-control-plaintext');
+        input_name.value = ano_row['name'];
+        input_coord.classList.add('form-control-plaintext');
+        input_coord.classList.add('coord');
+        input_coord.value = [ano_row.xmin, ano_row.ymin, ano_row.xmax, ano_row.ymax].join(', ');
+        canvas_preview.width = 50;
+        canvas_preview.height = 50;
+        var w = ano_row.xmax - ano_row.xmin;
+        var h = ano_row.ymax - ano_row.ymin;
+        canvas_preview.getContext('2d').drawImage(small, ano_row.xmin, ano_row.ymin, w, h, 0, 0, 50, 50);
+        td_color.id = "color"+r;
+
+        td_name.appendChild(input_name);
         tr_ano.appendChild(td_name);
+        td_coord.appendChild(input_coord);
+        tr_ano.appendChild(td_coord);
+        td_preview.appendChild(canvas_preview);
+        tr_ano.appendChild(td_preview);
         tr_ano.appendChild(td_color);
         tbody_ano[0].appendChild(tr_ano);
     }
-
 }
 
-// $(document).ready(function(){
-//     $('.tile')
-//     // tile mouse actions
-//     .on('mouseover', function(){
-//         $(this).children('.photo').css({'transform': 'scale('+ $(this).attr('data-scale') +')'});
-//     })
-//     .on('mouseout', function(){
-        // $(this).children('.photo').css({'transform': 'scale(1)'});
-//     })
-//     .on('mousemove', function(e){
-//         $(this).children('.photo').css({'transform-origin': ((e.pageX - $(this).offset().left) / $(this).width()) * 100 + '% ' + ((e.pageY - $(this).offset().top) / $(this).height()) * 100 +'%'});
-//     })
-//     // tiles set up
-//     .each(function(){
-//         $(this)
-//         // add a photo container
-//         .append('<div class="photo"></div>')
-//         // some text just to show zoom level on current item in this example
-//         .append('<div class="txt"><div class="x">'+ $(this).attr('data-scale') +'x</div>ZOOM ON<br>HOVER</div>')
-//         // set up a background image for each tile based on data-image attribute
-//         .children('.photo').css({'background-image': 'url('+ $(this).attr('data-image') +')'});
-//     });
-// })
+// Update labels/tags
+function update_label_tags(msg){
+    var tags_in = $('#tag-input'); 
+    tags = msg.tags;
+    tags_in[0].value = tags.join(" ");
+}
 
-// $(document).ready(function(){
-//     $('#canvas')
-//     // tile mouse actions
-//     .on('mouseover', function(){
-//     //     console.log("Mouse over");
-//     //     var canvas = $(this);
-//     //     var ctx = canvas[0].getContext('2d');
-//     //     ctx.clearRect(0, 0, $(this).attr('width'), $(this).attr('height'));
-//     //     // ctx.scale($(this).attr('data-scale-x'), $(this).attr('data-scale-x'));
-//     //     ctx.drawImage(img, 0, 0, $(this).attr('width'), $(this).attr('height'))
+// Update page
+function update(msg){
+    console.log(msg);
+    // Update UI
+    var small = document.querySelector('#small');
+    small.onload = function(){
+        // Update table
+        update_table(msg);
+        // Update tags/label
+        update_label_tags(msg);
+        DrawIM(msg);
+    }
+    small.src = msg.url;
+    if (msg.width < 80 || msg.height < 80){
+        small.setAttribute("style", "");
+    } else {
+        small.setAttribute("style", "display: none");
+    }
+}
 
-//     })
-//     .on('mouseout', function(){
-//         console.log("Mouse out");
-//     })
-//     .on('mousemove', function(e){
-//         console.log("Mouse move");
-//         var ctx = $(this)[0].getContext('2d');
-//         ctx.translate(e.pageX, e.pageY);
-//     })
-// })
+$(document).ready(function(){
+
+})
 
 //随机生成 rgb 颜色
 function Color() {
@@ -106,57 +113,84 @@ function GetRec(name, points, width, height) {
 };
 
 // 根据座标在canvas里画框，返回标注名和标注框颜色
-function DrawRec(p) {
+function DrawRec(p, c=null) {
     var canvas = document.getElementById('canvas');
     if (canvas.getContext) {
         var ctx = canvas.getContext('2d');
-        var c = new Color();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = c.color;
+        if(c == null){
+            c = new Color();
+            ctx.strokeStyle = c.color;
+        } else {
+            ctx.strokeStyle = c;
+        }
+        ctx.lineWidth = 5;
+        if (p.xmax - p.xmin < 20 || p.ymax - p.ymin < 20){
+            ctx.lineWidth = 1;
+        }
         ctx.strokeRect(p.xmin, p.ymin, p.xmax - p.xmin, p.ymax - p.ymin);
     };
 
     return {name:p.name,color:ctx.strokeStyle};
 };
 
+var msgg;
 // Draw canvas and annotation boxes
-function DrawIM(item){
-    var canvas = document.querySelector('#canvas');
+function DrawIM(data, redraw=false){
+    var canvas = document.querySelector('#canvas'), 
+    ano = data.ano;
     if (canvas.getContext) {
         var ctx = canvas.getContext('2d');
-        var im = document.querySelector('#canvas_im');                             // 以默认隐藏的原图为src，在canvas上缩放
-        var ori_w = im.naturalWidth;
-        var ori_h = im.naturalHeight;
-        canvas.width = 1280;
-        canvas.height = 720;
-        ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
-        for (var i in item) { 
-            var data = item[i];                                                    // 主循环                       
-            var Rec = GetRec(data.name, 
-                            {xmax:data.xmax, xmin:data.xmin, ymin:data.ymin, ymax:data.ymax}, 
-                            ori_w, 
-                            ori_h
-                            );
-            var obj = DrawRec(Rec);
-            var bg = document.getElementById("{{forloop.counter}}_{{data.name}}"); // 根据 tr id 填充背景色
-            // bg.bgColor=obj.color;
+        var small = document.querySelector('#small');                             // 以默认隐藏的原图为src，在canvas上缩放
+        ctx.drawImage(small, 0, 0, canvas.width, canvas.height);
+        for (var i in ano) { 
+            var ano_row = ano[i];                                                 // 主循环                       
+            var Rec = GetRec(ano_row.name, 
+                            {xmax:ano_row.xmax, xmin:ano_row.xmin, ymin:ano_row.ymin, ymax:ano_row.ymax}, 
+                            data.width, 
+                            data.height
+                            ); 
+            var bg = document.getElementById("color"+i);// 根据 tr id 填充背景色
+            if(redraw){
+                DrawRec(Rec, bg.bgColor);
+            } else{
+                var obj = DrawRec(Rec); 
+                bg.bgColor=obj.color;
+            }
         }
     };
 };
 
 $(document).ready(function(){
-    var url = "get_info?hash=" + $("#canvas_im").attr('value');
+    var url = "get_next";
+    var hash;
+    var zoom = false;
+    var canvas = $('canvas'),
+    ctx = canvas[0].getContext('2d'), 
+    zoom_x = canvas.attr('data-scale-x'), 
+    zoom_y = canvas.attr('data-scale-y'),
+    canvas_w = canvas.width(),
+    canvas_h = canvas.height(),  
+    offset_left = canvas.offset().left, 
+    offset_top = canvas.offset().top, 
+    pre_x = (1-1/zoom_x)/canvas_w, 
+    pre_y = (1-1/zoom_y)/canvas_h;
+    var rec_start = false;
+    var rec_end = false;
+    var hover= false;
+
     ajax({ 
         type:"GET", 
         url:url,
         dataType:"json", 
         success:function(msg){ 
-            var ano = msg.ano;
-            // Update annotation table
-            console.log(ano);
-            DrawIM(ano);
-            // Update table
-            update_table(msg);
+            msgg = msg;
+            hash = msg.hash;
+            update(msg);
+            // Add coord fixer listener
+            $('.coord').click(function(){
+                console.log('clicked on coord');
+                var coord = $(this);
+            })
         }, 
         error:function(){ 
             console.log("Error"); 
@@ -164,35 +198,99 @@ $(document).ready(function(){
     });
 
     $("#correct-button, #wrong-button, #check-button").click(function(){
-        var btn = $(this).val, 
-        val = btn.val();
-        console.log($("#canvas_im").attr('value'));
+        var btn = $(this), 
+        val = btn.attr('value'), 
+        url = "confirm?hash=" + hash + "&state=" + val;
         ajax({ 
             type:"GET", 
-            url:'confirm',
+            url:url,
             dataType:"json", 
-            data: {"hash": $("#canvas_im").attr('value'), "state": val}, 
             success:function(msg){ 
-                var ano = msg.ano;
-                // Update annotation table
-                console.log(ano);
-                DrawIM(ano);
-                // Update table
-                update_table(msg);
+                msgg = msg;
+                hash = msg.hash;
+                update(msg);
             }, 
             error:function(){ 
                 console.log("Error"); 
             } 
         });
+
     });
 
-    var im = document.querySelector('#canvas_im');
-    var ori_w = im.naturalWidth;
-    var ori_h = im.naturalHeight;
-    console.log(ori_h, ori_w);
-    if (ori_h < 80 || ori_w < 80){
-        var small = $("#small");
-        small[0].src = im.src;
-    }
+    $("#fix-form").submit(function(e){
+        var fix_form = $(this);
+        e.preventDefault();
+        var type = fix_form.attr('method');
+        var url = fix_form.attr('action');
+        var data = fix_form.serialize();
+        data = data + "&hash=" + hash;
+        ajax({ 
+            type:type, 
+            url:url, 
+            dataType:"text", 
+            data:data, 
+            success:function(msg){ 
+                alert(msg);
+            }, 
+            error:function(msg){ 
+                alert(msg);
+            } 
+        });
+    });
+
+    // detect mouse actions
+    canvas.on('mouseover', function(){
+        // console.log("Mouse over");
+        hover = true; 
+        console.log('hover', hover);
+    })
+    .on('mouseout', function(){
+        hover = false;
+        DrawIM(msgg, redraw=true);
+        console.log('hover', hover);
+    })
+    .on('mousemove', function(e){
+        // console.log("Mouse move", e.pageX, e.pageY);
+        if(zoom){
+            var small = document.querySelector('#small');
+            var tw = $("#small")[0].naturalWidth, 
+            th = $("#small")[0].naturalHeight;
+            ctx.clearRect(0, 0, canvas_w, canvas_h);
+
+            var x = (e.pageX - offset_left);
+            var y = (e.pageY - offset_top);
+            ctx.drawImage(small, x*tw*pre_x, y*th*pre_y, tw/zoom_x, th/zoom_y, 0, 0, canvas_w, canvas_h); 
+        }
+    })
+
+    // Detecting ctrl key press for zoom in
+    $(this).on('keydown', function(e){
+        if(event.which == '17'){
+            zoom = true;
+        }
+    })
+    .on('keyup', function(e){
+        if(event.which == '17'){
+            zoom = false;
+            DrawIM(msgg, redraw=true);
+        }
+    })
+
+    // Detecting if start drawing label bounding box
+    $(this).on('mousedown', function(e){
+        if(e.which == '1'){
+            if(hover){
+                console.log('start drawing', e.pageX - offset_left, e.pageY - offset_top);
+            }
+        }
+    })
+
+    $(this).on('mouseup', function(e){
+        if(e.which == '1'){
+            if(hover){
+                console.log('stop drawing', e.pageX - offset_left, e.pageY - offset_top);
+            }
+        }
+    })
 
 })

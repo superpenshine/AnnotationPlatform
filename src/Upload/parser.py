@@ -47,6 +47,7 @@ class XMLParser:
         s = root.find('size')
         size = {'width': s.find('width').text, 'height': s.find(
             'height').text, 'depth': '3'}                                          # 默认 depth 为 3
+        
         # Find objects
         objs = []
         for obj in root.findall('object'):

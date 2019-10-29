@@ -12,6 +12,7 @@ function update_opt(msg){
     var type = $("#input-type")[0];
     var project = $("#input-project")[0];
     var tag = $("#input-tags")[0];
+    $('.gen').remove();
 
     // Update Options
     for (var s in msg['scenes']){
@@ -56,6 +57,13 @@ function update_opt(msg){
     }
 }
 
+// Update daterangepicker properties
+function update_drp(msg){
+    var drp = $("#daterangepicker").data('daterangepicker');
+    drp.setStartDate(msg.from);
+    drp.setEndDate(msg.to);
+}
+
 // Update UI on tabel refresh
 function update_ui(page, total){
     // Next page button
@@ -96,9 +104,10 @@ function update_table(data){
     // })
     var sel_all_input = $("#sel-all-input")[0];
     sel_all_input.checked = true;
-    
+    console.log(data);
     var i = 1
     for (var r in data) {
+        data_row = data[r]
         //Update table content
         tr = document.createElement('tr'), 
         th = document.createElement('th'), 
@@ -113,11 +122,11 @@ function update_table(data){
         input_checkbox = document.createElement('input'), 
         label_checkbox = document.createElement('label');
         th.setAttribute("scope", "row");
-        th.textContent = data[r]['id'];
-        td_scene.textContent = data[r]['project_scene'];
-        td_type.textContent = data[r]['project_type'];
-        td_project.textContent = data[r]['project'];
-        td_time_added.textContent = data[r]['time_add'];
+        th.textContent = data_row['id'];
+        td_scene.textContent = data_row['project_scene'];
+        td_type.textContent = data_row['project_type'];
+        td_project.textContent = data_row['project'];
+        td_time_added.textContent = data_row['time_add'];
         tr.appendChild(th);
         tr.appendChild(td_scene);
         tr.appendChild(td_type);
@@ -125,15 +134,15 @@ function update_table(data){
         tr.appendChild(td_time_added);
 
         // Update preview
-        hash = data[r]['hash']
+        hash = data_row['hash']
         img_preview.classList.add("preview");
-        img_preview.src = '/media/' + hash + '.jpg';
-        img_preview.alt = hash + '.jpg';
+        img_preview.src = '/media/' + hash + "." + data_row['format']['image'];
+        img_preview.alt = hash + '.' + data_row['format']['image'];
         td_preview.appendChild(img_preview);
         tr.appendChild(td_preview);
 
         // Update checkbox bindings
-        var id_str = data[r]['id'].toString();
+        var id_str = data_row['id'].toString();
         div_checkbox.classList.add("custom-control");
         div_checkbox.classList.add("custom-checkbox");
         input_checkbox.classList.add("custom-control-input");
@@ -161,12 +170,11 @@ function update_table(data){
 }
 
 // Update dropdown options for current date range
-$(document).on('click', '.applyBtn', function(){
+$(document).on('click', '.applyBtn, .cancelBtn', function(){
     // Gather current conditions
     var data = $('#main_search_form').serialize();
     // Update local memory
     mem['daterangepicker'] = $("#daterangepicker")[0].value;
-    $('.gen').remove();
     var url = "/search/update_opts";
     ajax({ 
         type:"POST", 
@@ -198,8 +206,8 @@ $(function() {
             data: data, 
             dataType:"json", 
             success:function(msg){ 
-                console.log(msg);
                 update_opt(msg);
+                update_drp(msg);
             }, 
             error:function(){ 
                 console.log("Error"); 
@@ -222,6 +230,7 @@ $(function(){
             dataType:"json", 
             data:data, 
             success:function(msg){ 
+                console.log(msg);
                 var total = msg.total, page = parseInt(msg.page), data = msg.data;
                 if (total == 0){}
                 // Update table entries

@@ -23,11 +23,11 @@
 
 ##### *Filter module*
 - url routers 
-1. /confirm 处理审核信息标志，共0-3四个等级
+1. /confirm 处理审核信息标志，共0-3四个等级（0：待检查 1：标识正确　２：标识错误　３：待进一步检查）
 2. /fix 处理修正信息
 
 - views
-1. Index 为主入口
+1. fetch 为主入口（加载后客户端触发get_next获取待检查信息）
 2. checked 为审核信息标志位存入数据库
 3. fix 为修改的label和tags信息存入数据库
 
@@ -49,7 +49,7 @@
 5. 现阶段hash完全由图片像素决定，导致同张图片在不同项目中出现会被认为是重复。可修复为由项目名称＋已有hash。
 
 - 压缩包内路径规范
-1. 一个压缩包内包含一个Annotations文件夹及一个JPEGImages文件夹。 如需添加可能读取的文件夹名， 请修改Upload/parser.py
+1. 一个压缩包默认包含Annotations及JPEGImages文件夹。 请修改Upload/parser.py以添加可能读取的文件夹名。
 示例压缩包路径:
     gate_plate-num_daxie_2018-01-01.zip
         -Annotations

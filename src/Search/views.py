@@ -43,7 +43,10 @@ def get_hints(cond=None):
     tags = objects.values('tags').distinct()
     tags = [x['tags'] for x in tags]
     tags.insert(0, '*')
-    return {'scenes':scenes, 'projects':projects, 'types':types, 'tags':tags}
+    earliest = objects.earliest('time_add').time_add.strftime("%m/%d/%Y")
+    latest = objects.latest('time_add').time_add.strftime("%m/%d/%Y")
+
+    return {'scenes':scenes, 'projects':projects, 'types':types, 'tags':tags, 'from':earliest, 'to': latest}
 
 # Select entries with condition
 def select(data, cond):
@@ -92,7 +95,6 @@ class Query():
                 search_dict.update(b) 
         else:
             return redirect('/search')
-
         for k, v in search_dict.items():                                                           # 根据关键词搜索
             if k == 'scene':                                                                       
                 CACHE = CACHE.filter(project_scene=v)                                              
