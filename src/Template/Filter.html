@@ -22,7 +22,7 @@
             <div class="row">
                 <div class="col-2"></div>
                 <div class="col">
-                    Enlarge image by pressing CTRL and hover the pointer over the canvas.
+                    Enlarge image by pressing CTRL and hovering the pointer over the canvas.
                 </div>
             </div>
             <div class="row">
@@ -64,11 +64,11 @@
                 </table>
             </div>
             <div class="row">
-                <table class="table table-striped">
+                <table class="table table-sm table-striped">
                     <thead class="thead-dark">
                         <tr>
                             <th scope="col">NAME</th>
-                            <th scope="col">COORD<br>(xmin, ymin, xtop, ytop)</th>
+                            <th scope="col">COORD<br>(xmin, ymin, xmax, ymax)</th>
                             <th scope="col">PREVIEW</th>
                             <th scope="col">COLOR</th>
                         </tr>
@@ -85,26 +85,26 @@
             </div>
             <div class="row">
                 <div>
-                    <button type="submit" class="btn btn-primary" id="fix-button" form="fix-form" value='1'>FIX</button>
+                    <button type="button" class="btn btn-primary" id="fix-button" form="fix-form">FIX</button>
                 </div>
                 <div style="margin-left: 7px;">
-                    <button type="button" class="btn btn-primary" id="correct-button" name='state'>NEXT</button>
+                    <button type="button" class="btn btn-primary" id="next-button" name='state' value="1" form="fix-form">NEXT</button>
                 </div>
             </div>
             <div class="row" style="margin-top: 7px">
                 <div>
-                    <button type="button" class="btn btn-primary" id="correct-button" name='state' value='5'>Correct</button>
+                    <button type="button" class="btn btn-primary" id="correct-button" value='5' form="fix-form">Correct</button>
                 </div>
                 <div style="margin-left: 7px;">
-                    <button type="button" class="btn btn-danger" id="wrong-button" name='state' value='4'>Wrong</button>
+                    <button type="button" class="btn btn-danger" id="wrong-button" value='4' form="fix-form">Wrong</button>
                 </div>
                 <div style="margin-left: 7px;">
-                    <button type="button" class="btn btn-warning" id="check-button" name='state' value='2'>Require Investigation</button>
+                    <button type="button" class="btn btn-warning" id="check-button" value='2' form="fix-form">Require Investigation</button>
                 </div>
             </div>
             <div class="row" style="margin-top: 7px;">
                 <div>
-                    <button type="button" class="btn btn-danger" id="check-button" name='state' value='3'>Mark As Delete</button>
+                    <button type="button" class="btn btn-danger" id="delete-button" value='3'>Mark As Delete</button>
                 </div>
             </div>
         </div>

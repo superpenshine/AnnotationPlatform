@@ -1,10 +1,10 @@
 from random import randint
-
 from django.db.models import Q
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 
 from Search.models import Annotation, Tags
+import json
 
 # filter 主入口 
 class Index():
@@ -12,19 +12,19 @@ class Index():
         super(Index, self).__init__(*args, **kwargs)
         self.im_url = '/media/'                                     # 图片访问路径
         # self.im_url = '/home/wwl/datasets_default/' 
-        self.cache = Annotation.objects.filter(
-            Q(check_state=0) & Q(ano_type='pascal_voc'))            # 未检查的图片数据库缓存  
+        self.cache = None
         self.hash = ''
-        self.len = Annotation.objects.all().count()                 # 数据库总条数
         
     # request 请求主入口
     def fetch(self, request):
-        return render(request, 'Filter.html')                                  # 默认跳转 /filter
+        return render(request, 'Filter.html')                       # 默认跳转 /filter
  
     '''
     从数据库中通过hash检索annotation返还
     '''
     def get_next(self, request):
+        self.cache = Annotation.objects.filter(
+            Q(check_state=0) & Q(ano_type='pascal_voc'))
         free = self.cache.count()                                   # 需要检查的图片记录数量   
         data_decode_fail = True
         while data_decode_fail:
@@ -65,35 +65,24 @@ class Index():
     # 处理检查反馈的 request 
     def checked(self, request):
         # State: 0: untouched, 1: fixed, 2: require investigation, 3: marked, 4: wrong, 5: correct(final)
-        s = self.cache.get(hash=request.GET['hash'])
-        # s.check_state = int(request.GET['state'])                                         # annotation 数据库更新
-        s.save()                                                                            # Save queryset back to db
+        try:
+            entry = self.cache.get(hash=request.POST['hash'])
+        except MultipleObjectsReturned:
+            return HttpResponse(content="The case multiple unchecked entries with the same hash is not implemented.", status=501)
+        except ObjectDoesNotExist:
+            return HttpResponse(content="Request contains unknown hash.", status=400)
+            
+        entry.check_state = int(request.POST['state'])                                   # annotation 数据库更新
+        # If fix exsists
+        if request.POST.get('fix'):
+            fix = json.loads(request.POST.get('fix'))
+            entry.ano = encode(entry.ano, fix['ano'])
 
-        return redirect('/filter/get_next')                                                 # 默认跳转 /filter
+            
 
+        # s.save()
 
-# 处理修正的request
-def fix(request):
-    ah = request.POST['ahash']                                                              # 从 form 获取 ahash 作为判断同一张图的依据
-    if ',' in request.POST['fixlabel']:    
-        labels = request.POST['fixlabel'].split(',')                                        # 获取最新的 label 字符串并显式转换为列表
-    else:
-        labels = list(request.POST['fixlabel'])                                             # 如果 label 只有一个则转换为单一元素的列表
-    tags = request.POST['fixtag'].split(',')
-    save_tags = [int(i['tag_id'])
-                 for i in Tags.objects.filter(tag_en__in=tags).values('tag_id')]            # 将传入的 tag_en 列表转换为  annotation 表一致的 int[] 类型
-    old_ano = Annotation.objects.filter(hash=ah)                                            # 提出旧标注信息，后续分离标注座标
-    
-    new_ano = {'annotation': {'object': []}} 
-    for v in old_ano:
-        for k in v.ano['annotation']['object']:
-            for i in labels:
-                new_ano['annotation']['object'].append(                                     # 将新的标注 name 和旧标注座标合并
-                    {'name': i, 'bndbox': k['bndbox']}) 
-        v.tags = save_tags                                                                  # 更新tags
-        v.ano = new_ano                                                                     # 更新标注
-        v.save()
-    return redirect('/filter')
+        return self.get_next(request)
 
 # 解析json并返回标注信息的列表
 def decode(d):
@@ -112,4 +101,21 @@ def decode(d):
         ano.append({'name': name, 'xmin': xmin,
                     'xmax': xmax, 'ymin': ymin, 'ymax': ymax})
     return ano
+
+# 将标注转换为数据库格式并存入(用data更新d)
+'''
+{'annotation': {'owner': {'name': '唵嘛呢叭咪吽', 'flickrid': 'Fried Camels'}, 'object': [{'name': 'wordh', 'bndbox': {'xmax': '697', 'xmin': '655', 'ymax': '1204', 'ymin': '1168'}}, {'name': 'numhl', 'bndbox': {'xmax': '785', 'xmin': '704', 'ymax': '1236', 'ymin': '1181'}}, {'name': 'numhs', 'bndbox': {'xmax': '753', 'xmin': '707', 'ymax': '1253', 'ymin': '1214'}}]}}
+'''
+def encode(old, data):
+    obj = []
+    for ano in data: 
+        obj.append({'name': ano['name'], 
+                    'bndbox': {'xmin': ano['xmin'], 
+                                'xmax': ano['xmax'], 
+                                'ymin': ano['ymin'], 
+                                'ymax': ano['ymax']}})
+    old['annotation']['object'] = obj;
+
+    return old
+
 

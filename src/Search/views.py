@@ -201,7 +201,7 @@ class Query():
             # CACHE = CACHE.filter(ano_type='pascal_voc')                                           # 限制打包的标注格式只能式pascal_voc
             ids = [str(i.id) for i in CACHE]
             ids = list(set(ids) - set(unchecked))
-            Queue.objects.create(mail=mail, task_list=ids)                    # 把 id 列表存入队列
+            Queue.objects.create(mail=mail, task_list=ids)                                          # 把 id 列表存入队列
             req_dict = "req="+self.req
             return redirect(f'/download?mail={mail}&{req_dict}')
         else:

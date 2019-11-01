@@ -7,7 +7,7 @@ import xml.etree.ElementTree as et
 XML parser class to read annotations from xml file
 在此处加入不同格式xml的读取方法
 template: 在此处加入不同格式xml读取的方法, read_XML方法
-将依次使用
+将依次使用, 直到第一次成功读取
 template_proj: 如果read_XML提供了project name， 则尝试
 寻找project对应template。
 '''

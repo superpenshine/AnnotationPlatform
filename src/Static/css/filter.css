@@ -17,8 +17,9 @@ tbody input{
   text-align: center;
 }
 
-th, td {
+th, .table td {
   text-align: center;
+  vertical-align: middle;
 }
 
 .form-control-plaintext, td {
