@@ -1,3 +1,5 @@
+
+import json
 import urllib
 import logging
 
@@ -12,12 +14,6 @@ from django.core.paginator import Paginator
 # 主入口
 def index(request):
     hints = get_hints()
-
-    # List to string. Ex: ['1', '2'] => '1,2'
-    for i in range(len(hints['tags'])):
-        # tags_l = hints['tags'][i]
-        tags_str = ','.join(map(str, hints['tags'][i]))
-        hints['tags'][i] = tags_str
     return render(request, 'search.html', hints)
 
 # Updae dropdown options
@@ -31,6 +27,7 @@ def get_hints(cond=None):
     objects = Annotation.objects.all();
     if cond:
         objects = select(objects, cond)
+
     scenes = objects.values('project_scene').distinct()
     scenes = [x['project_scene'] for x in scenes]
     scenes.insert(0, '*')
@@ -40,16 +37,25 @@ def get_hints(cond=None):
     types = objects.values('project_type').distinct()
     types = [x['project_type'] for x in types]
     types.insert(0, '*')
-    tags = objects.values('tags').distinct()
-    tags = [x['tags'] for x in tags]
-    tags.insert(0, '*')
+    # annotation 表中 tags 存储为 int[]，需要从 Tags 表中取出 int 对应的 tag_en 提高可读性
+    # tags = [i['tag_en'] for i in Tags.objects.filter(
+    #     tag_id__in=rows.tags).values('tag_en') if i['tag_en'] != 'default'] 
+    tag_distinct = set()
+    for tag_lst in [x['tags'] for x in objects.values('tags').distinct()]:
+        for tag in tag_lst:
+            tag_distinct.add(tag)
+    tag_distinct = [i['tag_en'] for i in Tags.objects.filter(
+        tag_id__in=tag_distinct).values('tag_en') if i['tag_en'] != 'default'] 
+    tag_distinct.sort()
+    tag_distinct.insert(0, '*')
     earliest = objects.earliest('time_add').time_add.strftime("%m/%d/%Y")
     latest = objects.latest('time_add').time_add.strftime("%m/%d/%Y")
 
-    return {'scenes':scenes, 'projects':projects, 'types':types, 'tags':tags, 'from':earliest, 'to': latest}
+    return {'scenes':scenes, 'projects':projects, 'types':types, 'tags':tag_distinct, 'from':earliest, 'to': latest}
 
 # Select entries with condition
 def select(data, cond):
+
     for k, v in cond:
         if not v or v == '*':
             continue
@@ -59,17 +65,16 @@ def select(data, cond):
             data = data.filter(project=v)
         elif k == 'type':
             data = data.filter(project_type=v)
-        elif k == 'daterange':                                                                  # 在时间范围内搜索（包括前后时间）
+        elif k == 'daterange':                                                                     # 在时间范围内搜索（包括前后时间）
             earlier = v.split('-')[0].strip()
             later = v.split('-')[1].strip()
             data = data.filter(
                 time_add__gte=datetime.strptime(earlier, '%m/%d/%Y')).filter(
                 time_add__lte=datetime.strptime(later, '%m/%d/%Y'))
-        elif k == 'tags':                                                                       # 逗号分隔的 tag_en 必须要存在于 Tags 表中
-            t = v.split(',')
-            # ids = [i.id for i in Tags.objects.filter(tag_en=k) if k in t]
-            # data = data.filter(tags__contains=ids)          
-            data = data.filter(tags__contains=t)             
+        elif k == 'tags':                                                                          # 逗号分隔的 tag_en 必须要存在于 Tags 表中
+            tags_en = json.loads(v)
+            tags_num = [Tags.objects.filter(tag_en=tag).values('tag_id')[0]['tag_id'] for tag in tags_en]
+            data = data.filter(tags__contains=tags_num)
         else:
             print(f"INFO: Undefined parameter: {k}, value: {v}")
             continue

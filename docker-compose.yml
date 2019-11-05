@@ -10,7 +10,7 @@ services:
           - /storage/r1/workspace/welldb/data/postgres/backup:/var/lib/postgresql/backup
           - pgdata:/var/lib/postgresql/data
         env_file:
-          - docker/postgres/db_env
+          - docker/postgres/db_env`
         networks:
           - db_network
     welldb:

@@ -136,9 +136,9 @@ def run(url, email):
         t_pool = []
         for full_n in cp_fnames:
             src = os.path.join(tmp_proj, full_n)
-            dst = tmp_proj                                                         # 一会儿要根据包名提取lable所以分别解压到各自的文件夹， 而不是直接在tmp下
+            dst = tmp_proj                                                     # 一会儿要根据包名提取lable所以分别解压到各自的文件夹， 而不是直接在tmp下
             print(f'\nDecompressing {src} to {dst}')
-            task = Thread(target=unarchive, args=(src, dst))                       # 解压到临时目录
+            task = Thread(target=unarchive, args=(src, dst))                   # 解压到临时目录
             t_pool.append(task)
             task.start()
         for t in t_pool:

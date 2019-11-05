@@ -20,20 +20,18 @@
 - pack.py 为 打包函数部分
 - tasks.py 为分离出来的发邮件，以及上传NAS功能
 
-
 ##### *Filter module*
 - url routers 
-1. /confirm 处理审核信息标志，共0-3四个等级（0：待检查 1：标识正确　２：标识错误　３：待进一步检查）
-2. /fix 处理修正信息
+1. /confirm 处理审核信息标志，共0-5六个等级（0：待检查 1：标识已经过修正　２：需要进一步检查　３：标为删除（实际未从数据库删除）4: 错误 5: 正确）
 
 - views
 1. fetch 为主入口（加载后客户端触发get_next获取待检查信息）
-2. checked 为审核信息标志位存入数据库
-3. fix 为修改的label和tags信息存入数据库
+2. checked 为审核信息标志位存入数据库， 如有更新则更新相应entry。 现阶段save到Annotation数据库的命令已comment out以防止开发过程中意外修改。
 
 - frontend
 1. 利用canvas 缩放原始图像至1280x720,并相对缩放标注座标位置
 2. 修正的label和tags以逗号分隔，文档在 http://192.168.105.19:30000/wwl-research/team-alpha/wellannotation_doc
+3. 可添加座标修复时边框微调的功能
 
 ##### *Upload module*
 - url routers
@@ -44,8 +42,8 @@
    输入框也可输入NAS路径名， 默认以 / 开头。 路径下所有压缩包将被下载归档。
 示例1： **/WellOcean_Data/Picture/label/Ahj_fix_label/plate-num**
 2. 在临时文件夹解压，并存入数据库，现阶段使用测试数据表(AnoTest)。
-3. 已添加发送邮件功能
-4. 未加入图片转储功能
+3. 未添加系统错误/请求失败时发送邮件的功能
+4. 未加入图片转储功能（.jpg存储）
 5. 现阶段hash完全由图片像素决定，导致同张图片在不同项目中出现会被认为是重复。可修复为由项目名称＋已有hash。
 
 - 压缩包内路径规范

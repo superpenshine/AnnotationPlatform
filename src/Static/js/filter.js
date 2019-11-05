@@ -39,8 +39,7 @@ function update_table(data) {
         // 修改dom ele属性
         input_name.classList.add('form-control-plaintext');
         input_name.value = ano_row['name'];
-        input_coord.classList.add('form-control-plaintext');
-        input_coord.classList.add('coord');
+        input_coord.classList.add('form-control-plaintext', 'coord'); 
         input_coord.value = [ano_row.xmin, ano_row.ymin, ano_row.xmax, ano_row.ymax].join(', ');
         canvas_preview.width = 50;
         canvas_preview.height = 50;
@@ -166,7 +165,7 @@ function DrawIM(data, redraw=false){
                             data.width, 
                             data.height
                             ); 
-            var bg = document.getElementById("color"+i);// 根据 tr id 填充背景色
+            var bg = document.getElementById("color"+i);                          // 根据 tr id 填充背景色
             if(redraw){
                 DrawRec(Rec, bg.bgColor);
             } else{
@@ -199,6 +198,7 @@ $(document).ready(function(){
     xmin, ymin, xmax, ymax,                         // 修复时选定的框框
     pageX, pageY,                                   // 实时鼠标座标
     tmp_ori_xmin, tmp_ori_ymin,                     // 图片放大并开始画框时， 临时放大坐标在原图位置
+    tmp_ori_xmax, tmp_ori_ymax,                     // 图片放大并结束画框时， 临时放大坐标在原图位置
     fix = {};                                       // 本地存储修改
 
     ajax({ 
@@ -216,7 +216,7 @@ $(document).ready(function(){
     });
 
     // Correct/Wrong/Require Investigation
-    $("#correct-button, #wrong-button, #check-button, #next-button").click(function(){
+    $("#correct-button, #wrong-button, #check-button, #next-button, #delete-button").click(function(){
         var val = $(this).attr('value'); 
         var data = $("#fix-form").serialize() + "&hash=" + hash + "&state=" + val;
         var url = "/filter/confirm";
@@ -261,7 +261,8 @@ $(document).ready(function(){
                     ymin: ymin, 
                     ymax: ymax});
         });
-        $("$tag-input")
+        tags = $("#tag-input")[0].value.split(' ');
+
         fix.ano = ano;
         fix.tags = tags;
         console.log(fix);
@@ -299,6 +300,16 @@ $(document).ready(function(){
             else {
                 ctx.drawImage(small, x*tw*pre_x, y*th*pre_y, tw/zoom_x, th/zoom_y, 
                             0, 0, canvas_w, canvas_h); 
+                if(xmin != null) {
+                    var xmin_canvas = (tmp_ori_xmin-x*tw*pre_x)*zoom_x*canvas_w/tw;
+                    var ymin_canvas = (tmp_ori_ymin-y*th*pre_y)*zoom_y*canvas_h/th;
+                    var xmax_canvas = (tmp_ori_xmax-x*tw*pre_x)*zoom_x*canvas_w/tw;
+                    var ymax_canvas = (tmp_ori_ymax-y*th*pre_y)*zoom_y*canvas_h/th;
+
+                    DrawRec({xmax: xmax_canvas, xmin: xmin_canvas, 
+                        ymax: ymax_canvas, ymin: ymin_canvas, 
+                        name: 'temp_fix'}, 'rgb(0,0,0)');
+                }
             }
         // 画框
         } else if(mousedown && xmin != null){
@@ -321,6 +332,16 @@ $(document).ready(function(){
                 var y = (pageY - offset_top);
                 ctx.drawImage(small, x*tw*pre_x, y*th*pre_y, tw/zoom_x, th/zoom_y, 
                             0, 0, canvas_w, canvas_h); 
+                if(xmin != null) {
+                    var xmin_canvas = (tmp_ori_xmin-x*tw*pre_x)*zoom_x*canvas_w/tw;
+                    var ymin_canvas = (tmp_ori_ymin-y*th*pre_y)*zoom_y*canvas_h/th;
+                    var xmax_canvas = (tmp_ori_xmax-x*tw*pre_x)*zoom_x*canvas_w/tw;
+                    var ymax_canvas = (tmp_ori_ymax-y*th*pre_y)*zoom_y*canvas_h/th;
+
+                    DrawRec({xmax: xmax_canvas, xmin: xmin_canvas, 
+                        ymax: ymax_canvas, ymin: ymin_canvas, 
+                        name: 'temp_fix'}, 'rgb(0,0,0)');
+                }
             }
             // 禁止画框途中进行zoom
             if(mousedown){
@@ -336,6 +357,7 @@ $(document).ready(function(){
         if(e.which == '17'){
             zoom = false;
             DrawIM(msgg, redraw=true);
+
         }
     })
     // Detecting if start drawing label bounding box
@@ -370,6 +392,8 @@ $(document).ready(function(){
                 if (coord_to_fix && xmin != null){
                     var tw = small.naturalWidth, 
                     th = small.naturalHeight;
+                    tmp_ori_xmax = Math.round(xmax*tw*pre_x + (xmax*tw/canvas_w)/zoom_x);
+                    tmp_ori_ymax = Math.round(ymax*th*pre_y + (ymax*th/canvas_h)/zoom_y);
                     // Fix the coord
                     if (xmin > xmax) {
                         var tmp = xmax;

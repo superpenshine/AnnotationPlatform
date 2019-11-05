@@ -3,22 +3,21 @@
 <html>
 <head>
     <!-- Online Sources -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css">
 
     <!-- Custom Static Files -->
     <script  src="{% static 'js/ajax_f.js' %}" type="text/javascript"></script>
     <script  src="{% static 'js/search.js' %}" type="text/javascript"></script>
     <link href="{% static 'css/search.css' %}" type="text/css" rel="stylesheet">
 
-    <!-- For Date Time Picker -->
-    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css" /> -->
-    <!-- <script type="text/javascript" src="https://cdn.bootcss.com/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"></script> -->
-    <link rel="stylesheet" type="text/css" href="{% static 'css/daterangepicker.css' %}" />
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-    <script type="text/javascript" src="{% static 'js/daterangepicker.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"></script>
 </head>
 
 <body>
@@ -84,14 +83,19 @@
                         <label for="input-scene">Tag</label>
                     </div>
                     <div class="form-group col-4">
-                        <select id="input-tags" class="form-control" name = 'tags'>
-                        <!-- <option class="gen" selected>*</option> -->
+                        <select id="input-tags" class="form-control" name = 'tags' data-role="tagsinput">
                         {% if tags %}
                             {% for p in tags %}
-                                <option class="gen">{{ p }}</option>
-                                }
+                                <option class="gen gen-tag" value="{{ p }}">{{ p }}</option>
                             {% endfor %}
                         {% endif %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row justify-content-center">
+                    <div class="form-group col-2 align-self-end"></div>
+                    <div class="form-group col-4">
+                       <select id="tagsinput" multiple data-role="tagsinput">
                         </select>
                     </div>
                 </div>
@@ -173,7 +177,8 @@
                         <td>N/A</td>
                         <td>N/A</td>
                         <td>
-                            <img class="preview" src="/media/b9bb839b1b1b161e01f0e6fda3130d8e.jpg" alt="b9bb839b1b1b161e01f0e6fda3130d8e.jpg">
+                            <img class="preview" src="https://i2.wp.com/learn.onemonth.com/wp-content/uploads/2017/08/1-10.png?fit=845%2C503&ssl=1" alt="https://i2.wp.com/learn.onemonth.com/wp-content/uploads/2017/08/1-10.png?fit=845%2C503&ssl=1">
+                            <!-- <img class="preview" src="/media/b9bb839b1b1b161e01f0e6fda3130d8e.jpg" alt="b9bb839b1b1b161e01f0e6fda3130d8e.jpg"> -->
                         </td>
                         <td>
                             <div class="custom-control custom-checkbox" style="display:inline-block;">
@@ -193,7 +198,7 @@
                         <label class="col-form-label" for="input-email">Email</label>
                     </div>
                     <div class= "col-7 form-group">
-                        <input class="col-form-label" id="input-email" class="form-control" type="text" name="mail" maxlength="100">
+                        <input class="form-control" id="input-email" class="form-control" type="text" name="mail" maxlength="100">
                     </div>
                     <div class="form-group col-2 align-self-center">
                         <button type="submit" class="btn btn-primary" id="download-button">Download</button>

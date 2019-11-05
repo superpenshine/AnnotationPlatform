@@ -1,9 +1,10 @@
 // JS file for search.html
 
 
-// Local memory
-var mem = {"input-scene":'*', "input-type":'*',"input-project":'*',"input-tags":'*', "daterangepicker":''};
-//Local memory to remember unchecked checkboxes
+// 自动更新选项收到服务器response后， 根据此memory选择默认展示项（用户之前选择）。
+// 'input-tags'是tagsinput和input-tags之间的数据关联
+var mem = {"input-scene":'*', "input-type":'*',"input-project":'*',"input-tags":[], "daterangepicker":''};
+//Local memory for unchecked checkboxes
 var unchecked = [];
 
 // Update options availabel in dropdown lists
@@ -48,13 +49,18 @@ function update_opt(msg){
     for (var t in msg['tags']){
         var text = msg['tags'][t];
         var opt = document.createElement('option');
-        opt.classList.add('gen');
+        opt.classList.add('gen', 'gen-tag');
         opt.textContent = text;
         tag.appendChild(opt);
-        if (text == mem['input-tags']) {
+        if (text == mem['input-tags'][mem['input-tags'].length - 1]) {
             opt.selected = true;
         }
     }
+    // $(document).on('click', '.gen-tag', function(){
+    //     console.log($(this));
+    //     $("#tagsinput").tagsinput('add', $(this).val());
+    // })
+    
 }
 
 // Update daterangepicker properties
@@ -104,7 +110,6 @@ function update_table(data){
     // })
     var sel_all_input = $("#sel-all-input")[0];
     sel_all_input.checked = true;
-    console.log(data);
     var i = 1
     for (var r in data) {
         data_row = data[r]
@@ -153,12 +158,14 @@ function update_table(data){
         input_checkbox.value = id_str;
         label_checkbox.classList.add("custom-control-label");
         label_checkbox.setAttribute ("for", "customCheck" + i);
-        // Upon page change, check if entry in unchecked list
+
+        // 更新全部下载选择按钮ui
         if ($.inArray(id_str, unchecked) == -1) {
             input_checkbox.checked = true;
         } else {
             sel_all_input.checked = null;
         }
+
         div_checkbox.appendChild(input_checkbox);
         div_checkbox.appendChild(label_checkbox);
         td_checkbox.appendChild(div_checkbox);
@@ -169,50 +176,41 @@ function update_table(data){
     }
 }
 
-// Update dropdown options for current date range
-$(document).on('click', '.applyBtn, .cancelBtn', function(){
-    // Gather current conditions
-    var data = $('#main_search_form').serialize();
-    // Update local memory
-    mem['daterangepicker'] = $("#daterangepicker")[0].value;
-    var url = "/search/update_opts";
-    ajax({ 
-        type:"POST", 
-        url:url,
-        data: data, 
-        dataType:"json", 
-        success:function(msg){ 
-            console.log(msg);
-            update_opt(msg);
-        }, 
-        error:function(){ 
-            console.log("Error"); 
-        } 
-    });
-});
 
-// Update dropdown options for current filter condition
+// Update dropdown options for current filter condition 
+// 考虑到用户可能在tagsinput中手动输入， 这里只将选中值加入tagsinput， 
+// 触发itemAdded进行下一步操作
 $(function() {
     $(".form-control").change(function(e){
-        // Gather current conditions
-        var data = $('#main_search_form').serialize();
-        // Update local memory
-        mem[$(this)[0].id] = $(this)[0].value;
-        $('.gen').remove();
-        var url = "/search/update_opts";
+        // Update tagsinput
+        if($(this)[0].id == 'input-tags') {
+            if ($(this).val() != '*'){
+                $("#tagsinput").tagsinput('add', $(this).val());
+                return
+            }
+            mem['input-tags'] = [];
+            $("#tagsinput").tagsinput('removeAll');
+        } else {
+            mem[$(this)[0].id] = $(this)[0].value; 
+        }
+
+        // Gather current choice and update options
+        var data = $("#main_search_form input, #main_search_form select[id!='input-tags']").serialize() + "&tags=" + JSON.stringify(mem['input-tags']);
+        var url = "/search/update_opts"; 
         ajax({ 
             type:"POST", 
             url:url,
             data: data, 
             dataType:"json", 
             success:function(msg){ 
-                update_opt(msg);
-                update_drp(msg);
+                update_opt(msg); 
+                update_drp(msg); 
             }, 
             error:function(){ 
                 console.log("Error"); 
             } 
         });
+        console.log(mem);
     });
 })
 
@@ -222,7 +220,7 @@ $(function(){
         e.preventDefault();
         var type = $(this).attr('method');
         var url = $(this).attr('action');
-        var data = $(this).serialize();
+        var data = $("#main_search_form input, #main_search_form select[id!='input-tags']").serialize() + "&tags=" + JSON.stringify(mem['input-tags']);
         unchecked = [];
         ajax({ 
             type:type, 
@@ -302,8 +300,30 @@ $(function(){
     });
 })
 
-//For selecting required items in the table
-$(document).on('click','.ckb',function(e){
+// Add to memory when tag added, then update options
+.on('itemAdded itemRemoved', '#tagsinput', function(e) {
+    // Update local memory
+    mem['input-tags'] = $(this).val(); 
+    // Gather current choice
+    var data = $("#main_search_form input, #main_search_form select[id!='input-tags']").serialize() + "&tags=" + JSON.stringify(mem['input-tags']);
+    var url = "/search/update_opts"; 
+    // Update local memory
+    ajax({ 
+        type:"POST", 
+        url:url,
+        data: data, 
+        dataType:"json", 
+        success:function(msg){ 
+            update_opt(msg); 
+            update_drp(msg); 
+        }, 
+        error:function(){ 
+            console.log("Error"); 
+        } 
+    });
+})
+
+.on('click','.ckb',function(e){
     var val = $(this).val();
     if($(this).is(':checked')){
         // Remove from unchecked
@@ -316,7 +336,29 @@ $(document).on('click','.ckb',function(e){
         $('#sel-all-input')[0].checked = null;
     }
     console.log(unchecked);
-});
+})
+
+// Update dropdown options for current date range
+.on('click', '.applyBtn, .cancelBtn', function(){
+    // Gather current conditions
+    var data = $("#main_search_form input, #main_search_form select[id!='input-tags']").serialize() + "&tags=" + JSON.stringify(mem['input-tags']);
+    // Update local memory
+    mem['daterangepicker'] = $("#daterangepicker")[0].value;
+    var url = "/search/update_opts";
+    ajax({ 
+        type:"POST", 
+        url:url,
+        data: data, 
+        dataType:"json", 
+        success:function(msg){ 
+            console.log(msg);
+            update_opt(msg);
+        }, 
+        error:function(){ 
+            console.log("Error"); 
+        } 
+    });
+})
 
 // $(document).on('click','.ckb:not(:checked)',function(e){
 //     unchecked.push($(this).val());
@@ -324,7 +366,7 @@ $(document).on('click','.ckb',function(e){
 // });
 
 //For select all button
-$(document).on('click','#sel-all-input',function(e){
+.on('click','#sel-all-input',function(e){
     if($(this).is(':checked')){
         // Remove all ids in current page from unchecked
         $(".ckb").each(function(){
@@ -342,7 +384,13 @@ $(document).on('click','#sel-all-input',function(e){
         });
     }
     console.log(unchecked);
-});
+})
+
+.on('click', ".preview", function(){
+    $(".modal")[0].style.display = "block";
+    $(".modal-content")[0].src = this.src;
+    $(".modal-caption")[0].innerHTML = this.alt;
+})
 
 // For download function
 $(function(){
@@ -367,12 +415,6 @@ $(function(){
         });
     });
 })
-
-$(document).on('click', ".preview", function(){
-    $(".modal")[0].style.display = "block";
-    $(".modal-content")[0].src = this.src;
-    $(".modal-caption")[0].innerHTML = this.alt;
-});
 
 // When the user clicks on <span> (x), close the modal
 $(function(){

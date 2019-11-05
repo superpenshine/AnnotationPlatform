@@ -24,7 +24,8 @@ class Index():
     '''
     def get_next(self, request):
         self.cache = Annotation.objects.filter(
-            Q(check_state=0) & Q(ano_type='pascal_voc'))
+            Q(ano_type='pascal_voc'), 
+            Q(check_state=0) | Q(check_state=4))
         free = self.cache.count()                                   # 需要检查的图片记录数量   
         data_decode_fail = True
         while data_decode_fail:
@@ -77,8 +78,7 @@ class Index():
         if request.POST.get('fix'):
             fix = json.loads(request.POST.get('fix'))
             entry.ano = encode(entry.ano, fix['ano'])
-
-            
+            entry.tag = fix['ano']['tags']
 
         # s.save()
 
